@@ -1,12 +1,17 @@
 """
-core/display.py — функции вывода (бывший cli/render.py).
+cli/render.py — общие функции вывода.
+Используются и CLI (main.py), и интерактивным меню (cli/menu.py).
 """
+
+import sys
 
 from config import ENERGY_ITEM_ID
 from services.craft import IngredientCost, RecipeAnalysis
+from services.price import phase
 from storage.listing import get_item_name
 
 
+# ---------- форматирование ----------
 def fmt_price(v: float | None) -> str:
     if v is None:
         return "—"
@@ -17,6 +22,7 @@ def fmt_pct(v: float | None) -> str:
     return f"{v:+.1f}%" if v is not None else "—"
 
 
+# ---------- вывод ингредиентов ----------
 def print_ingredient_line(ing: IngredientCost, indent: int = 2,
                           explain: bool = False,
                           show_ids: bool = False) -> None:
@@ -64,6 +70,7 @@ def print_ingredient_tree(ing, item_index, indent=2, max_depth_display=2,
                                   show_ids=show_ids)
 
 
+# ---------- полный отчёт ----------
 def print_analysis(a: RecipeAnalysis, item_index: dict,
                    craft_calc=None,
                    explain: bool = False,
@@ -161,6 +168,42 @@ def print_analysis(a: RecipeAnalysis, item_index: dict,
 
     if a.missing_energy:
         print(f"  ⚠️  Нет цены на {ENERGY_ITEM_ID} — энергия не учтена")
+
+
+# ---------- prefetch ----------
+def direct_items(recipes: list[dict], exclusions: set[str]) -> set[str]:
+    items = set() if ENERGY_ITEM_ID in exclusions else {ENERGY_ITEM_ID}
+    for r in recipes:
+        for res in r.get("result", []):
+            items.add(res["item"])
+        for ing in r.get("ingredients", []):
+            if ing["item"] in exclusions:
+                continue
+            items.add(ing["item"])
+    return items
+
+
+def prefetch_prices(price_service, craft_calc, recipes, opts,
+                    item_index, exclusions) -> None:
+    if craft_calc is not None:
+        items = (craft_calc.collect_tree_items(recipes)
+                 if opts.get("recursive") else direct_items(recipes, exclusions))
+    else:
+        items = direct_items(recipes, exclusions)
+    todo = [i for i in items if not price_service._is_cached(i)]
+    if not todo:
+        print(f"→ Все {len(items)} itemId в кэше")
+        return
+    workers = opts.get("workers", 4)
+    label = f"Prefetch цен ({len(todo)} itemId, workers={workers})"
+    print()
+    with phase(label, label_width=55):
+        def _progress(done, total, current_id):
+            name = get_item_name(item_index, current_id)
+            sys.stdout.write(f"\r   [{done:3d}/{total:3d}] {name[:40]:40s}")
+            sys.stdout.flush()
+        price_service.prefetch(todo, workers=workers, progress=_progress)
+    print()
 
 
 def print_stats(price_service, craft_calc) -> None:
