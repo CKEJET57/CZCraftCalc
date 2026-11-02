@@ -12,7 +12,7 @@ from cli.help import print_operations, print_topic, print_unknown_topic
 from config import DEFAULT_REGION
 from core.context import build_context
 from core.options import AnalysisOptions
-from core.runner import run_batch, run_character, run_recipe
+from core.runner import run_batch, run_character, run_history, run_recipe
 from storage.exclusions import (
     add_exclusions, clear_exclusions, load_exclusions, remove_exclusions,
 )
@@ -78,6 +78,16 @@ def cmd_recipe(args) -> int:
     ctx = build_context(opts)
     try:
         run_recipe(args.item_id, opts, ctx)
+    finally:
+        ctx.close()
+    return 0
+
+def cmd_history(args) -> int:
+    opts = AnalysisOptions.from_args(args)
+    ctx = build_context(opts)
+    try:
+        run_history(args.item_id, opts, ctx,
+                    limit=args.limit, sort=args.sort, days=args.days)
     finally:
         ctx.close()
     return 0
@@ -160,6 +170,19 @@ def main() -> int:
     p1.add_argument("item_id")
     add_common_args(p1)
     p1.set_defaults(func=cmd_recipe)
+
+    ph = sub.add_parser("history", help="История покупок предмета")
+    ph.add_argument("item_id")
+    ph.add_argument("--limit", type=int, default=200,
+                    help="Сколько сделок запросить (по умолчанию 200)")
+    ph.add_argument("--sort",
+                    choices=["newest", "oldest", "price-asc", "price-desc"],
+                    default="newest",
+                    help="Сортировка (по умолчанию newest)")
+    ph.add_argument("--days", type=int, default=None,
+                    help="Только за последние N дней")
+    add_common_args(ph)
+    ph.set_defaults(func=cmd_history)
 
     pc = sub.add_parser("character", help="Публичный профиль персонажа по имени")
     pc.add_argument("name", help="Ник персонажа")

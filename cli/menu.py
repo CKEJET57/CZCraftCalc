@@ -97,6 +97,121 @@ class MenuSession:
             print(f"\n[ERROR] {type(e).__name__}: {e}")
         _pause()
 
+    def _menu_history(self) -> None:
+        """Выбор категории → предмета → опции истории → вывод."""
+        self._ensure_data()
+        groups, cat_names, order = self._group_recipes()
+
+        while True:  # категории
+            _clear()
+            print("── Категории (история покупок) ──\n")
+            for i, cid in enumerate(order, 1):
+                print(f"  {i:2d}. {cat_names[cid]}  ({len(groups[cid])})")
+            print("   0. ← Назад")
+            choice = _ask("\nВыбор: ")
+            if choice in ("", "0"):
+                return
+            try:
+                cid = order[int(choice) - 1]
+            except (ValueError, IndexError):
+                _pause()
+                continue
+
+            # уникальные предметы категории
+            seen: dict[str, dict] = {}
+            for r in groups[cid]:
+                rid = r["result"][0]["item"]
+                seen.setdefault(rid, r)
+            items = sorted(seen.values(),
+                           key=lambda r: get_item_name(
+                               self._item_index, r["result"][0]["item"],
+                               self.opts.lang))
+
+            while True:  # предметы
+                _clear()
+                print(f"── {cat_names[cid]} — история покупок ──\n")
+                for i, r in enumerate(items, 1):
+                    name = get_item_name(self._item_index,
+                                        r["result"][0]["item"], self.opts.lang)
+                    print(f"  {i:3d}. {name}")
+                print("\n    F. 🔍 Поиск по названию")
+                print("    0. ← К категориям")
+                choice = _ask("\nВыбор: ").strip()
+                if choice in ("", "0"):
+                    break
+                if choice.upper() == "F":
+                    q = _ask("Подстрока: ").lower()
+                    if q:
+                        filtered = [
+                            r for r in items
+                            if q in get_item_name(
+                                self._item_index, r["result"][0]["item"],
+                                self.opts.lang).lower()
+                        ]
+                        if filtered:
+                            items = filtered
+                        else:
+                            print("  Ничего не найдено")
+                            _pause()
+                    continue
+                try:
+                    item_id = items[int(choice) - 1]["result"][0]["item"]
+                except (ValueError, IndexError):
+                    continue
+                self._history_options(item_id)
+                # после выхода возвращаемся к списку предметов
+
+    def _history_options(self, item_id: str) -> None:
+        limit = 200
+        sort = "newest"
+        days: int | None = None
+        while True:
+            _clear()
+            name = get_item_name(self._item_index, item_id, self.opts.lang)
+            print(f"── История: {name} ({item_id}) ──\n")
+            print(f"  1. Лимит: {limit}")
+            print(f"  2. Сортировка: {sort}")
+            print(f"  3. За последние дней: {days if days else 'все'}")
+            print(f"  4. ✅ Показать историю")
+            print(f"  0. ← К списку предметов")
+            choice = _ask("\nДействие [0-4]: ")
+            if choice == "1":
+                v = _ask("Лимит (1-1000): ")
+                try:
+                    limit = max(1, min(1000, int(v)))
+                except ValueError:
+                    pass
+            elif choice == "2":
+                print("\n  1. newest  2. oldest  3. price-asc  4. price-desc")
+                v = _ask("Выбор: ")
+                mapping = {"1": "newest", "2": "oldest",
+                           "3": "price-asc", "4": "price-desc"}
+                if v in mapping:
+                    sort = mapping[v]
+            elif choice == "3":
+                v = _ask("Дней (0 = все): ")
+                try:
+                    n = int(v)
+                    days = n if n > 0 else None
+                except ValueError:
+                    pass
+            elif choice == "4":
+                self._run_history(item_id, limit, sort, days)
+                _pause()
+            elif choice in ("0", ""):
+                return
+
+    def _run_history(self, item_id: str, limit: int, sort: str,
+                     days: int | None) -> None:
+        _clear()
+        ctx = self._context()
+        from core.runner import run_history
+        try:
+            run_history(item_id, self.opts, ctx,
+                        limit=limit, sort=sort, days=days)
+        except Exception as e:
+            print(f"\n[ERROR] {type(e).__name__}: {e}")
+
     def _ensure_craft(self) -> set[str]:
         self._ensure_price()
         exclusions = load_exclusions()
@@ -139,9 +254,10 @@ class MenuSession:
                 print("  2. 🏆 Топ по категориям")
                 print("  3. 🎁 Управление исключениями")
                 print("  4. 📖 Справка")
-                print("  5. 🧑 Профиль персонажа")     # NEW
-                print("  6. 🚪 Выход\n")              # сдвиг
-                choice = _ask("Выбор [1-6]: ")
+                print("  5. 🧑 Профиль персонажа")
+                print("  6. 🧾 История покупок предмета")   
+                print("  7. 🚪 Выход\n")                  
+                choice = _ask("Выбор [1-7]: ")
                 if choice == "1":
                     self._menu_recipe()
                 elif choice == "2":
@@ -151,8 +267,10 @@ class MenuSession:
                 elif choice == "4":
                     self._menu_help()
                 elif choice == "5":
-                    self._menu_character()             # NEW
-                elif choice in ("6", "q", ""):
+                    self._menu_character()
+                elif choice == "6":
+                    self._menu_history()                   
+                elif choice in ("7", "q", ""):
                     break
         except KeyboardInterrupt:
             print()

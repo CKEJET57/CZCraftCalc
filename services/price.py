@@ -199,6 +199,22 @@ class PriceService:
                 return PriceInfo(item_id, min_lot, "lots", lots_count)
 
         return PriceInfo(item_id, None, "none", 0)
+    
+    def get_history(self, item_id: str, limit: int | None = None) -> list[dict]:
+        """
+        Сырые сделки из /history.
+        Возвращает [{price, amount, [time]}, ...] или [] при ошибке.
+        """
+        limit = limit if limit is not None else self.history_limit
+        url = f"{EAPI_BASE}/{self.region}/auction/{item_id}/history"
+        r = self._http_get(url, {"limit": limit}, f"{item_id}/history")
+        if r is None or r.status_code != 200:
+            return []
+        try:
+            data = r.json()
+        except ValueError:
+            return []
+        return data.get("prices") or data.get("lots") or []
 
     def _history_median(self, item_id: str) -> tuple[float | None, int]:
         url = f"{EAPI_BASE}/{self.region}/auction/{item_id}/history"

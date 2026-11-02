@@ -2,9 +2,10 @@
 core/runner.py — оркестрация анализа: единая логика для CLI и меню.
 """
 
+import statistics
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from config import ENERGY_ITEM_ID, EXCLUDED_TOP_CATEGORIES, LOCAL_TIMEZONE
@@ -215,6 +216,104 @@ def run_batch(opts, ctx, recipes: list[dict], *,
 
     print_stats(ctx.price_service, ctx.craft_calc)
 
+
+# ──────────────────────────────────────────────────────────────────
+#  History (сырые сделки)
+# ──────────────────────────────────────────────────────────────────
+def run_history(item_id: str, opts, ctx,
+                limit: int = 200,
+                sort: str = "newest",
+                days: int | None = None) -> None:
+    """История покупок предмета с статистикой и списком сделок."""
+    history = ctx.price_service.get_history(item_id, limit)
+    name = get_item_name(ctx.item_index, item_id, opts.lang)
+
+    print(f"\n=== История покупок: {name} ({item_id}) ===")
+
+    if not history:
+        print("  Сделок не найдено (или история недоступна).")
+        return
+
+    # --- нормализация ---
+    deals: list[dict] = []
+    for d in history:
+        try:
+            price = float(d.get("price", 0))
+            amount = int(d.get("amount", 0))
+        except (TypeError, ValueError):
+            continue
+        if amount <= 0 or price <= 0:
+            continue
+        deals.append({
+            "price": price,
+            "amount": amount,
+            "unit": price / amount,
+            "time": d.get("time") or d.get("timestamp"),
+        })
+
+    if not deals:
+        print("  Нет валидных сделок.")
+        return
+
+    # --- фильтр по дням ---
+    if days is not None and days > 0:
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        filtered = []
+        for d in deals:
+            if not d["time"]:
+                continue
+            try:
+                dt = datetime.fromisoformat(d["time"].replace("Z", "+00:00"))
+            except ValueError:
+                continue
+            if dt >= cutoff:
+                filtered.append(d)
+        deals = filtered
+        if not deals:
+            print(f"  Нет сделок за последние {days} дн.")
+            return
+
+    # --- сортировка ---
+    if sort == "newest":
+        deals.sort(key=lambda d: d["time"] or "", reverse=True)
+    elif sort == "oldest":
+        deals.sort(key=lambda d: d["time"] or "")
+    elif sort == "price-asc":
+        deals.sort(key=lambda d: d["unit"])
+    elif sort == "price-desc":
+        deals.sort(key=lambda d: d["unit"], reverse=True)
+
+    # --- статистика ---
+    units = sorted(d["unit"] for d in deals)
+    n = len(units)
+    trim = int(n * 0.1)
+    core = units[trim: n - trim] if trim else units
+    median_all = statistics.median(units) if units else 0.0
+    median_trim = statistics.median(core) if core else 0.0
+    total_rub = sum(d["price"] for d in deals)
+    total_units = sum(d["amount"] for d in deals)
+
+    print(f"  Сделок: {n}  |  единиц: {total_units}  |  "
+          f"сумма: {fmt_price(total_rub)}")
+    print("\n  💰 Цена за штуку:")
+    print(f"     min:              {fmt_price(units[0])}")
+    print(f"     max:              {fmt_price(units[-1])}")
+    print(f"     median:           {fmt_price(median_all)}")
+    print(f"     median (trim10%): {fmt_price(median_trim)}")
+
+    # --- список сделок ---
+    show = min(20, n)
+    label = "последние" if sort in ("newest", "price-desc") else "первые"
+    print(f"\n  📋 {label} {show} сделок:")
+    for i, d in enumerate(deals[:show], 1):
+        when = _fmt_datetime(d["time"]) if d["time"] else "—"
+        print(f"    {i:2d}. {when:20s}  {fmt_price(d['unit']):>10s}/шт  "
+              f"× {d['amount']:4d}  = {fmt_price(d['price']):>12s}")
+    if n > show:
+        print(f"    … ещё {n - show} (увеличь --limit)")
+
+    if opts.verbose:
+        print(f"\n  Первый raw-элемент: {history[0]}")
 
 # ──────────────────────────────────────────────────────────────────
 #  Character profile

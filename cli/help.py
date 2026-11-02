@@ -29,6 +29,8 @@ def print_operations() -> None:
     _p("  menu                      Интерактивное меню (по умолчанию без аргументов)")
     _p("  recipe <item_id>          Анализ всех рецептов, дающих item_id")
     _p("                            Пример: main.py recipe wj2zp")
+    _p("  history <item_id>         История покупок предмета (сырые сделки)")
+    _p("                            Пример: main.py history zz1o2 --limit 100")
     _p("  batch                     Пакетный анализ по фильтру (bench/category/perk)")
     _p("                            Пример: main.py batch --bench workbench --category ammunition")
     _p("  exclusions <action>       Управление исключениями (нулевая стоимость)")
@@ -84,6 +86,7 @@ def print_operations() -> None:
     _p("  main.py help exclusions     Про исключения (нулевая стоимость)")
     _p("  main.py help menu           Про интерактивное меню")
     _p("  main.py help character      Про профиль персонажа")
+    _p("  main.py help history        Про историю покупок")
     _p("  main.py help all            Всё сразу")
 
     _p("\n" + HEADER)
@@ -101,6 +104,7 @@ TOPICS = {
     "troubleshoot": "Диагностика проблем",
     "exclusions": "Исключения (нулевая стоимость)",
     "character": "Профиль персонажа",
+    "history": "История покупок предмета",
     "menu": "Интерактивное меню",
 }
 
@@ -487,6 +491,41 @@ def _topic_character() -> None:
 """)
     _p(HEADER)
 
+def _topic_history() -> None:
+    _p(HEADER)
+    _p("  🧾 История покупок предмета")
+    _p(HEADER)
+    _p("""
+  Команда:
+    python main.py history <itemId> [--limit 200] [--sort newest]
+                                  [--days 7] [--region RU]
+
+  Меню:
+    главное меню → 6. История покупок → категория → предмет → опции
+
+  Что запрашивается:
+    GET /{region}/auction/{itemId}/history?limit=200
+
+  Что показывается:
+    - статистика: min / max / median / median (trim 10%)
+    - сумма и количество единиц
+    - список последних 20 сделок (дата, цена за штуку, кол-во, сумма)
+
+  Флаги:
+    --limit N        сколько сделок запросить (1-1000, по умолчанию 200)
+    --sort newest    свежие сверху (по умолчанию)
+    --sort oldest    старые сверху
+    --sort price-asc дешёвые сверху
+    --sort price-desc дорогие сверху
+    --days N         только за последние N дней
+
+  Примеры:
+    python main.py history zz1o2
+    python main.py history zz1o2 --limit 500 --sort price-asc
+    python main.py history zz1o2 --days 7
+    python main.py history zz1o2 --verbose   (покажет raw-элемент)
+""")
+    _p(HEADER)
 
 # ══════════════════════════════════════════════════════════════════
 #  ДИСПЕТЧЕР
@@ -501,6 +540,7 @@ _DISPATCH = {
     "exclusions": _topic_exclusions,
     "menu": _topic_menu,
     "character": _topic_character,
+    "history": _topic_history,
 }
 
 
