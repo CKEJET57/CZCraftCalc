@@ -1,7 +1,14 @@
 """
 services/price.py — цены за штуку.
 
-v3: + heartbeat, + verbose, + фазы прогресса.
+Фичи:
+  - requests.Session (keep-alive)
+  - потокобезопасный кэш
+  - бюджет запросов (max_requests)
+  - параллельный prefetch()
+  - heartbeat в stderr
+  - verbose: лог каждого HTTP-запроса
+  - опционально: только /lots (без /history)
 """
 
 import statistics
@@ -22,7 +29,7 @@ from config import DEFAULT_REGION, EAPI_BASE
 class PriceInfo:
     item_id: str
     unit_price: float | None
-    source: str
+    source: str          # "history" | "lots" | "none"
     samples: int = 0
 
 
@@ -171,7 +178,8 @@ class PriceService:
         except requests.RequestException as e:
             if self.verbose:
                 dt = time.time() - t0
-                sys.stderr.write(f"  [GET] {label:22s} → ERR ({dt:.2f}s) {type(e).__name__}\n")
+                sys.stderr.write(f"  [GET] {label:22s} → ERR ({dt:.2f}s) "
+                                 f"{type(e).__name__}\n")
             return None
 
         if self.verbose:
@@ -240,7 +248,7 @@ class PriceService:
 
 @contextmanager
 def phase(name: str, label_width: int = 40):
-    """Печатает '▶ name ...' / '✓ name за Xs'."""
+    """Печатает '▶ name ... ✓ X.Xs' в stderr."""
     t0 = time.time()
     dots = "." * max(3, label_width - len(name))
     sys.stderr.write(f"▶ {name} {dots} ")

@@ -1,6 +1,5 @@
 """
 config.py — единственная точка чтения настроек и секретов.
-В проде значения из .env, здесь — захардкожены для простоты.
 """
 
 from pathlib import Path
@@ -21,7 +20,8 @@ DEFAULT_LOTS_LIMIT = 200
 BASE_DIR = Path(__file__).parent
 DB_DIR = BASE_DIR / "database"
 LISTING_FILE = DB_DIR / "listing.json"
+EXCLUSIONS_FILE = DB_DIR / "exclusions.json"
 
-# --- энергия (учёт через покупку 401j на аукционе) ---
+# --- энергия (учёт через покупку "Батарей холодного синтеза" на аукционе) ---
 ENERGY_ITEM_ID = "401j"
-ENERGY_PER_ITEM = 5000.0          # сколько энергии даёт 1 шт "Батарея холодного синтеза"
+ENERGY_PER_ITEM = 5000.0

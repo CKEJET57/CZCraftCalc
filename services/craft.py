@@ -1,7 +1,15 @@
 """
 services/craft.py — анализ прибыльности рецепта с учётом энергии.
 
-v4: добавлены explain / explain-tree / ignore-missing.
+Фичи:
+  - --recursive: min(рынок, крафт) с мемоизацией и защитой от циклов
+  - --fee: комиссия аукциона при продаже
+  - энергия через покупку 401j
+  - --explain / --explain-tree / --ignore-missing
+  - исключения (нулевая стоимость)
+  - required_total: листья выбранного пути (📦)
+  - full_tree: базовые ресурсы при "всё крафтим сами" (🌳)
+  - согласованное округление сумм для UI
 """
 
 import math
@@ -18,7 +26,7 @@ class CostResult:
     item_id: str
     amount: int
     cost: float | None
-    source: str                     # "market" | "craft" | "none"
+    source: str                     # "market" | "craft" | "excluded" | "none"
     unit_price: float | None
     craft_recipe: dict | None = None
     craft_runs: int = 0
@@ -26,18 +34,76 @@ class CostResult:
     children: list["CostResult"] = field(default_factory=list)
     ingredients_cost: float | None = None
     energy_cost: float | None = None
-    # --- explain ---
     market_cost: float | None = None
     craft_cost: float | None = None
     why: str = ""
 
 
-class CraftCalculator:
-    """Выбирает лучшее: купить на рынке или скрафтить. Учитывает энергию."""
+# ---------- сбор leaf-листьев выбранного пути (📦) ----------
+def _collect_required(node: "CostResult",
+                      out: dict[str, tuple[int, str]]) -> None:
+    if node.source == "craft" and node.children:
+        for child in node.children:
+            _collect_required(child, out)
+        return
+    prev_amt, prev_src = out.get(node.item_id, (0, node.source))
+    out[node.item_id] = (prev_amt + node.amount, prev_src)
 
-    def __init__(self, hideout_data: dict, price_service: PriceService, max_depth: int = 12):
+
+# ---------- полное дерево: принудительно разворачиваем всё (🌳) ----------
+_SRC_PRIORITY = {"market": 0, "lots": 0, "none": 1}
+
+
+def _worse_source(a: str, b: str) -> str:
+    return a if _SRC_PRIORITY.get(a, 99) >= _SRC_PRIORITY.get(b, 99) else b
+
+
+def _collect_full_tree(item_id: str, amount: int,
+                       calc: "CraftCalculator",
+                       out: dict[str, tuple[int, str]],
+                       path: frozenset[str],
+                       depth: int) -> None:
+    """
+    Принудительно разворачивает рецепт до базовых ресурсов
+    (игнорирует выбор resolve market vs craft).
+
+    Исключённые предметы пропускаются — они уже есть на складе.
+    """
+    if item_id in calc.exclusions:
+        return
+
+    is_leaf = (
+        item_id in path
+        or depth > calc.max_depth
+        or item_id not in calc.recipes_by_result
+    )
+
+    craft = None
+    if not is_leaf:
+        craft = calc._try_craft(item_id, amount, path, depth)
+        if craft is None or not craft.children:
+            is_leaf = True
+
+    if is_leaf:
+        info = calc.price_service.get(item_id)
+        src = info.source if info.unit_price is not None else "none"
+        prev, prev_src = out.get(item_id, (0, src))
+        out[item_id] = (prev + amount, _worse_source(prev_src, src))
+        return
+
+    for child in craft.children:
+        _collect_full_tree(child.item_id, child.amount, calc, out,
+                           path | {item_id}, depth + 1)
+
+
+class CraftCalculator:
+    """Выбирает лучшее: купить на рынке или скрафтить. Учитывает энергию и исключения."""
+
+    def __init__(self, hideout_data: dict, price_service: PriceService,
+                 max_depth: int = 12, exclusions: set[str] | None = None):
         self.price_service = price_service
         self.max_depth = max_depth
+        self.exclusions: set[str] = set(exclusions or [])
         self.recipes_by_result: dict[str, list[dict]] = {}
         for r in hideout_data["recipes"]:
             for res in r.get("result", []):
@@ -51,6 +117,7 @@ class CraftCalculator:
             "resolve_calls": self._resolve_calls,
             "cache_hits": self._resolve_cache_hits,
             "memo_size": len(self._memo),
+            "exclusions": len(self.exclusions),
         }
 
     # ---------------- публичный API ----------------
@@ -58,6 +125,16 @@ class CraftCalculator:
                 path: frozenset[str] = frozenset(),
                 depth: int = 0) -> CostResult:
         self._resolve_calls += 1
+
+        if item_id in self.exclusions:
+            result = CostResult(
+                item_id, amount, 0.0, "excluded", 0.0,
+                ingredients_cost=0.0, energy_cost=0.0,
+                why="исключён (нулевая стоимость)",
+            )
+            self._memo[(item_id, amount)] = result
+            return result
+
         key = (item_id, amount)
         if item_id not in path and key in self._memo:
             self._resolve_cache_hits += 1
@@ -75,7 +152,6 @@ class CraftCalculator:
         ):
             craft_result = self._try_craft(item_id, amount, path, depth)
 
-        # --- выбор источника + объяснение ---
         if market_cost is not None and craft_result is not None:
             if market_cost <= craft_result.cost:
                 result = CostResult(
@@ -87,7 +163,8 @@ class CraftCalculator:
             else:
                 craft_result.market_cost = market_cost
                 craft_result.craft_cost = craft_result.cost
-                craft_result.why = f"крафт {craft_result.cost:.0f} < рынок {market_cost:.0f}"
+                craft_result.why = (f"крафт {craft_result.cost:.0f} < "
+                                    f"рынок {market_cost:.0f}")
                 result = craft_result
         elif market_cost is not None:
             why = ("только рынок (нет рецепта)"
@@ -114,6 +191,8 @@ class CraftCalculator:
     # ---------------- энергия ----------------
     def _energy_cost(self, energy: float) -> float | None:
         if energy <= 0:
+            return 0.0
+        if ENERGY_ITEM_ID in self.exclusions:
             return 0.0
         info = self.price_service.get(ENERGY_ITEM_ID)
         if info.unit_price is None:
@@ -164,11 +243,9 @@ class CraftCalculator:
     # ---------------- explain-tree ----------------
     def explain_missing(self, item_id: str, depth: int = 0,
                         path: frozenset[str] = frozenset()) -> list[str]:
-        """
-        Возвращает список базовых itemId без цены, из-за которых
-        не удаётся скрафтить item_id.
-        """
         if depth > 4 or item_id in path:
+            return []
+        if item_id in self.exclusions:
             return []
         recipes = self.recipes_by_result.get(item_id, [])
         if not recipes:
@@ -177,6 +254,8 @@ class CraftCalculator:
         for recipe in recipes:
             for ing in recipe["ingredients"]:
                 ing_id = ing["item"]
+                if ing_id in self.exclusions:
+                    continue
                 info = self.price_service.get(ing_id)
                 if info.unit_price is not None:
                     continue
@@ -202,13 +281,16 @@ class CraftCalculator:
                 for res in r.get("result", []):
                     items.add(res["item"])
                 for ing in r.get("ingredients", []):
+                    if ing["item"] in self.exclusions:
+                        continue
                     items.add(ing["item"])
                     for child in self.recipes_by_result.get(ing["item"], []):
                         nxt.append(child)
             if not nxt:
                 break
             frontier = nxt
-        items.add(ENERGY_ITEM_ID)
+        if ENERGY_ITEM_ID not in self.exclusions:
+            items.add(ENERGY_ITEM_ID)
         return items
 
 
@@ -243,9 +325,21 @@ class RecipeAnalysis:
     margin_pct: float | None
     missing_ingredients: int
     missing_energy: bool
-    partial: bool                    # NEW: расчёт неполный (ignore_missing)
+    partial: bool
+    excluded_summary: dict[str, int]                # 🎁
+    required_total: dict[str, tuple[int, str]]      # 📦 (листья выбранного пути)
+    full_tree: dict[str, tuple[int, str]]           # 🌳 (базовые, если всё крафтим)
     category_ru: str
     subcategory_ru: str
+
+
+# ---------- согласованное округление ----------
+def _display_prices(unit_price: float | None,
+                    amount: int) -> tuple[float | None, float | None]:
+    if unit_price is None:
+        return None, None
+    u = round(unit_price)
+    return float(u), float(u * amount)
 
 
 # ---------- анализ одного рецепта ----------
@@ -257,6 +351,7 @@ def analyze_recipe(
     craft_calc: CraftCalculator | None = None,
     lang: str = "ru",
     ignore_missing: bool = False,
+    exclusions: set[str] | frozenset[str] = frozenset(),
 ) -> RecipeAnalysis:
     result = recipe["result"][0]
     result_item_id = result["item"]
@@ -274,36 +369,71 @@ def analyze_recipe(
     ingredients: list[IngredientCost] = []
     ingredients_sum = 0.0
     missing = 0
+    required_total: dict[str, tuple[int, str]] = {}   # 📦
+    full_tree: dict[str, tuple[int, str]] = {}        # 🌳
+
     for ing in recipe["ingredients"]:
         name = get_item_name(item_index, ing["item"], lang)
+        craft_path: CostResult | None = None
+
         if craft_calc is not None:
             cr = craft_calc.resolve(ing["item"], ing["amount"])
-            unit_price, total_price, source = cr.unit_price, cr.cost, cr.source
-            craft_path = cr if cr.source == "craft" else None
-            # для explain сохраняем cr целиком, даже если market
-            if source != "craft" and cr.why:
-                craft_path = cr  # чтобы main мог напечатать why
+            _collect_required(cr, required_total)
+            _collect_full_tree(ing["item"], ing["amount"], craft_calc,
+                               full_tree, frozenset(), 0)
+            if cr.cost is None:
+                unit_disp = total_disp = None
+                source = "none"
+            else:
+                source = cr.source
+                unit_disp, total_disp = _display_prices(
+                    cr.cost / ing["amount"], ing["amount"]
+                )
+            if cr.source == "craft" or cr.why:
+                craft_path = cr
+        elif ing["item"] in exclusions:
+            unit_disp, total_disp = 0.0, 0.0
+            source = "excluded"
+            prev, prev_src = required_total.get(ing["item"], (0, "excluded"))
+            required_total[ing["item"]] = (prev + ing["amount"], prev_src)
+            # в full_tree исключённые не попадают
         else:
             info = price_service.get(ing["item"])
-            unit_price = info.unit_price
-            total_price = unit_price * ing["amount"] if unit_price is not None else None
-            source = info.source
-            craft_path = None
-        if total_price is None:
+            if info.unit_price is None:
+                unit_disp = total_disp = None
+                source = "none"
+                src_for_total = "none"
+            else:
+                source = info.source
+                unit_disp, total_disp = _display_prices(
+                    info.unit_price, ing["amount"]
+                )
+                src_for_total = source
+            prev, prev_src = required_total.get(ing["item"], (0, src_for_total))
+            required_total[ing["item"]] = (prev + ing["amount"], prev_src)
+            prev, prev_src = full_tree.get(ing["item"], (0, src_for_total))
+            full_tree[ing["item"]] = (prev + ing["amount"], prev_src)
+
+        if total_disp is None:
             missing += 1
         else:
-            ingredients_sum += total_price
+            ingredients_sum += total_disp
+
         ingredients.append(IngredientCost(
             item_id=ing["item"], name=name, amount=ing["amount"],
-            unit_price=unit_price, total_price=total_price,
+            unit_price=unit_disp, total_price=total_disp,
             source=source, craft_path=craft_path,
         ))
 
+    excluded_summary = {
+        k: v[0] for k, v in required_total.items() if v[1] == "excluded"
+    }
+
     if missing == 0:
-        ingredients_cost = ingredients_sum
+        ingredients_cost = round(ingredients_sum)
         partial = False
     elif ignore_missing:
-        ingredients_cost = ingredients_sum
+        ingredients_cost = round(ingredients_sum)
         partial = True
     else:
         ingredients_cost = None
@@ -313,12 +443,15 @@ def analyze_recipe(
     energy_cost: float | None
     missing_energy = False
     if energy > 0:
-        e_info = price_service.get(ENERGY_ITEM_ID)
-        if e_info.unit_price is not None:
-            energy_cost = (energy / ENERGY_PER_ITEM) * e_info.unit_price
+        if ENERGY_ITEM_ID in exclusions:
+            energy_cost = 0.0
         else:
-            energy_cost = None
-            missing_energy = True
+            e_info = price_service.get(ENERGY_ITEM_ID)
+            if e_info.unit_price is not None:
+                energy_cost = round((energy / ENERGY_PER_ITEM) * e_info.unit_price)
+            else:
+                energy_cost = None
+                missing_energy = True
     else:
         energy_cost = 0.0
 
@@ -342,6 +475,9 @@ def analyze_recipe(
             total_cost=None, profit=None, margin_pct=None,
             missing_ingredients=missing, missing_energy=missing_energy,
             partial=partial,
+            excluded_summary=excluded_summary,
+            required_total=required_total,
+            full_tree=full_tree,
             category_ru=cat, subcategory_ru=subcat,
         )
 
@@ -359,5 +495,8 @@ def analyze_recipe(
         total_cost=total_cost, profit=profit, margin_pct=margin,
         missing_ingredients=missing, missing_energy=missing_energy,
         partial=partial,
+        excluded_summary=excluded_summary,
+        required_total=required_total,
+        full_tree=full_tree,
         category_ru=cat, subcategory_ru=subcat,
     )
