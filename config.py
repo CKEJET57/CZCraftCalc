@@ -21,3 +21,7 @@ DEFAULT_LOTS_LIMIT = 200
 BASE_DIR = Path(__file__).parent
 DB_DIR = BASE_DIR / "database"
 LISTING_FILE = DB_DIR / "listing.json"
+
+# --- энергия (учёт через покупку 401j на аукционе) ---
+ENERGY_ITEM_ID = "401j"
+ENERGY_PER_ITEM = 5000.0          # сколько энергии даёт 1 шт "Батарея холодного синтеза"
