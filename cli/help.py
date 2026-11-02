@@ -33,6 +33,8 @@ def print_operations() -> None:
     _p("                            Пример: main.py batch --bench workbench --category ammunition")
     _p("  exclusions <action>       Управление исключениями (нулевая стоимость)")
     _p("                            list | add <id> | remove <id> | clear")
+    _p("  character <name>          Публичный профиль персонажа по имени")
+    _p("                            Пример: main.py character Ivan")
     _p("  help [topic]              Эта справка / справка по теме")
     _p("                            Темы: examples, prices, energy, fee, recursive,")
     _p("                                  troubleshoot, exclusions, menu, all")
@@ -56,6 +58,7 @@ def print_operations() -> None:
     _p("  --ignore-missing          Считать приблизительно, если не хватает цен")
     _p("  --exclude 7rp7,404p       Исключить itemId (нулевая стоимость, разово)")
     _p("  --show-ids                Показывать itemId ингредиентов")
+    _p("  (для character используется только --region и --verbose)")
 
     # ---------- флаги batch ----------
     _p("\n🎯 ТОЛЬКО ДЛЯ batch")
@@ -80,6 +83,7 @@ def print_operations() -> None:
     _p("  main.py help troubleshoot   Что делать, если нет цен")
     _p("  main.py help exclusions     Про исключения (нулевая стоимость)")
     _p("  main.py help menu           Про интерактивное меню")
+    _p("  main.py help character      Про профиль персонажа")
     _p("  main.py help all            Всё сразу")
 
     _p("\n" + HEADER)
@@ -96,6 +100,7 @@ TOPICS = {
     "recursive": "Рекурсивный крафт",
     "troubleshoot": "Диагностика проблем",
     "exclusions": "Исключения (нулевая стоимость)",
+    "character": "Профиль персонажа",
     "menu": "Интерактивное меню",
 }
 
@@ -448,6 +453,40 @@ def _topic_menu() -> None:
 """)
     _p(HEADER)
 
+def _topic_character() -> None:
+    _p(HEADER)
+    _p("  🧑 Профиль персонажа")
+    _p(HEADER)
+    _p("""
+  Команда:
+    python main.py character <name> [--region RU]
+
+  Меню:
+    главное меню → 5. Профиль персонажа → ввести ник
+
+  Что запрашивается:
+    GET /{region}/character/by-name/{name}/profile
+    Authorization: Bearer <app_token>   (client_credentials)
+
+  Что показывается:
+    - имя, UUID, альянс
+    - клан (название, тег, роль, статус)
+    - публичная статистика (если API её отдаёт)
+
+  Ограничения:
+    - инвентарь, склад, деньги — НЕ отдаются
+    - список персонажей аккаунта — требует user token, не app token
+    - точные поля статистики могут меняться (API в бете)
+
+  Ошибки:
+    404 — персонаж с таким ником не найден (не ошибка, просто None)
+    401 — токен недействителен (перевыпустить через OAuth)
+
+  Отладка:
+    --verbose → печатает все ключи ответа для анализа формата
+""")
+    _p(HEADER)
+
 
 # ══════════════════════════════════════════════════════════════════
 #  ДИСПЕТЧЕР
@@ -461,6 +500,7 @@ _DISPATCH = {
     "troubleshoot": _topic_troubleshoot,
     "exclusions": _topic_exclusions,
     "menu": _topic_menu,
+    "character": _topic_character,
 }
 
 

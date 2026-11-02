@@ -3,6 +3,7 @@ cli/menu.py — интерактивное меню.
 Вся логика анализа — в core/runner.py.
 """
 
+import os
 import sys
 
 from api.auth import fetch_token
@@ -25,8 +26,7 @@ from storage.listing import build_item_index, get_item_name, load_listing
 #  Утилиты
 # ──────────────────────────────────────────────────────────────────
 def _clear() -> None:
-    sys.stdout.write("\033[2J\033[H")
-    sys.stdout.flush()
+    os.system("cls" if os.name == "nt" else "clear")
 
 
 def _ask(prompt: str) -> str:
@@ -80,6 +80,22 @@ class MenuSession:
             self._region = self.opts.region
             self._craft_calc = None
             self._excl_snapshot = frozenset()
+    def _menu_character(self) -> None:
+        _clear()
+        name = _ask("Ник персонажа: ").strip()
+        if not name:
+            return
+        region = _ask(f"Регион [{self.opts.region}]: ").strip().upper()
+        if region:
+            self.opts.region = region
+
+        ctx = self._context()
+        from core.runner import run_character
+        try:
+            run_character(name, self.opts, ctx)
+        except Exception as e:
+            print(f"\n[ERROR] {type(e).__name__}: {e}")
+        _pause()
 
     def _ensure_craft(self) -> set[str]:
         self._ensure_price()
@@ -123,8 +139,9 @@ class MenuSession:
                 print("  2. 🏆 Топ по категориям")
                 print("  3. 🎁 Управление исключениями")
                 print("  4. 📖 Справка")
-                print("  5. 🚪 Выход\n")
-                choice = _ask("Выбор [1-5]: ")
+                print("  5. 🧑 Профиль персонажа")     # NEW
+                print("  6. 🚪 Выход\n")              # сдвиг
+                choice = _ask("Выбор [1-6]: ")
                 if choice == "1":
                     self._menu_recipe()
                 elif choice == "2":
@@ -133,7 +150,9 @@ class MenuSession:
                     self._menu_exclusions()
                 elif choice == "4":
                     self._menu_help()
-                elif choice in ("5", "q", ""):
+                elif choice == "5":
+                    self._menu_character()             # NEW
+                elif choice in ("6", "q", ""):
                     break
         except KeyboardInterrupt:
             print()
@@ -146,11 +165,14 @@ class MenuSession:
         return max(perks.values()) if perks else 0
 
     def _group_recipes(self):
+        from config import EXCLUDED_TOP_CATEGORIES
         groups: dict[str, list[dict]] = {}
         cat_names: dict[str, str] = {}
         order: list[str] = []
         for r in self._hideout["recipes"]:
             cid = extract_category_id(r) or "other"
+            if cid in EXCLUDED_TOP_CATEGORIES:
+                continue
             if cid not in groups:
                 groups[cid] = []
                 order.append(cid)

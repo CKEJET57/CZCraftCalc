@@ -25,3 +25,8 @@ EXCLUSIONS_FILE = DB_DIR / "exclusions.json"
 # --- энергия (учёт через покупку "Батарей холодного синтеза" на аукционе) ---
 ENERGY_ITEM_ID = "401j"
 ENERGY_PER_ITEM = 5000.0
+
+# --- категории, которые не показывать в топах/списках ---
+# furniture    = «Функциональные объекты»
+# decorative   = «Декоративная мебель»
+EXCLUDED_TOP_CATEGORIES = frozenset({"furniture", "decorative"})

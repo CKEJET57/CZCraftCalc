@@ -12,7 +12,7 @@ from cli.help import print_operations, print_topic, print_unknown_topic
 from config import DEFAULT_REGION
 from core.context import build_context
 from core.options import AnalysisOptions
-from core.runner import run_batch, run_recipe
+from core.runner import run_batch, run_character, run_recipe
 from storage.exclusions import (
     add_exclusions, clear_exclusions, load_exclusions, remove_exclusions,
 )
@@ -64,6 +64,14 @@ def cmd_exclusions(args) -> int:
         return 0
     return 1
 
+def cmd_character(args) -> int:
+    opts = AnalysisOptions.from_args(args)
+    ctx = build_context(opts)
+    try:
+        run_character(args.name, opts, ctx)
+    finally:
+        ctx.close()
+    return 0
 
 def cmd_recipe(args) -> int:
     opts = AnalysisOptions.from_args(args)
@@ -152,6 +160,11 @@ def main() -> int:
     p1.add_argument("item_id")
     add_common_args(p1)
     p1.set_defaults(func=cmd_recipe)
+
+    pc = sub.add_parser("character", help="Публичный профиль персонажа по имени")
+    pc.add_argument("name", help="Ник персонажа")
+    add_common_args(pc)
+    pc.set_defaults(func=cmd_character)
 
     p2 = sub.add_parser("batch", help="Пакетный анализ по фильтру")
     p2.add_argument("--bench", choices=["workbench", "laboratory_table",
