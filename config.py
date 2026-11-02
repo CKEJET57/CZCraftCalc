@@ -30,3 +30,8 @@ ENERGY_PER_ITEM = 5000.0
 # furniture    = «Функциональные объекты»
 # decorative   = «Декоративная мебель»
 EXCLUDED_TOP_CATEGORIES = frozenset({"furniture", "decorative"})
+
+# --- часовой пояс для отображения дат (IANA name) ---
+# Москва: Europe/Moscow, Екатеринбург: Asia/Yekaterinburg,
+# Калининград: Europe/Kaliningrad, Новосибирск: Asia/Novosibirsk
+LOCAL_TIMEZONE = "Europe/Moscow"

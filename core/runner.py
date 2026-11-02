@@ -4,8 +4,10 @@ core/runner.py — оркестрация анализа: единая логи�
 
 import sys
 import time
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
-from config import ENERGY_ITEM_ID, EXCLUDED_TOP_CATEGORIES
+from config import ENERGY_ITEM_ID, EXCLUDED_TOP_CATEGORIES, LOCAL_TIMEZONE
 from core.display import (
     fmt_pct, fmt_price, print_analysis, print_stats,
 )
@@ -28,6 +30,20 @@ _SORT_LABEL = {
 
 def _sort_label(sort: str) -> str:
     return _SORT_LABEL.get(sort, sort)
+
+def _fmt_datetime(iso_str: str | None) -> str:
+    """
+    '2026-11-01T11:19:24.198Z' → '01.11.2026 14:19' (в LOCAL_TIMEZONE).
+    Если строка пустая или не парсится — возвращает как есть.
+    """
+    if not iso_str:
+        return "—"
+    try:
+        dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
+        local = dt.astimezone(ZoneInfo(LOCAL_TIMEZONE))
+        return local.strftime("%d.%m.%Y %H:%M")
+    except (ValueError, KeyError):
+        return iso_str
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -214,29 +230,73 @@ def run_character(name: str, opts, ctx) -> None:
         print(f"Персонаж «{name}» не найден в регионе {opts.region}.")
         return
 
-    print(f"\n=== Профиль: {profile.get('name', name)} ===")
+    # --- основное ---
+    print(f"\n=== {profile.get('username') or name} ===")
     print(f"  UUID: {profile.get('uuid', '—')}")
     print(f"  Альянс: {profile.get('alliance', '—')}")
+    print(f"  Статус: {profile.get('status', '—')}")
 
+    last_login = profile.get("lastLogin")
+    if last_login:
+        print(f"  Последний вход: {_fmt_datetime(last_login)}")
+
+    # --- клан ---
     clan = profile.get("clan") or {}
     info = clan.get("info") or {}
     member = clan.get("member") or {}
     if info:
-        print(f"  Клан: {info.get('name', '—')} [{info.get('tag', '—')}]")
-        print(f"  Роль: {member.get('rank', '—')}")
-        print(f"  Статус: {member.get('status', '—')}")
+        clan_name = info.get("name", "—")
+        clan_tag = info.get("tag", "—")
+        print(f"\n  Клан: {clan_name} [{clan_tag}]")
+        if info.get("level"):
+            print(f"    Уровень: {info['level']} "
+                  f"({info.get('levelPoints', 0)} очков)")
+        if info.get("alliance"):
+            print(f"    Альянс клана: {info['alliance']}")
+        if info.get("leader"):
+            print(f"    Лидер: {info['leader']}")
+        if info.get("memberCount") is not None:
+            print(f"    Участников: {info['memberCount']}")
+        if member:
+            print(f"    Роль: {member.get('rank', '—')}")
+            if member.get("joinTime"):
+                print(f"    В клане с: {_fmt_datetime(member['joinTime'])}")
     else:
-        print("  Клан: —")
+        print("\n  Клан: —")
 
-    stats = profile.get("stats") or profile.get("statistics") or {}
-    if stats:
-        print("\n  Статистика:")
-        for k, v in stats.items():
-            if isinstance(v, (int, float, str)):
-                print(f"    {k}: {v}")
+    # --- статистика: список {id, type, value} ---
+    # stats = profile.get("stats") or []
+    # if stats:
+    #     print("\n  Статистика:")
+    #     for s in stats:
+    #         if not isinstance(s, dict):
+    #             continue
+    #         sid = s.get("id", "?")
+    #         stype = s.get("type", "?")
+    #         value = s.get("value")
+    #         # value может быть {}, числом, строкой или dict
+    #         if value in ({}, None):
+    #             continue
+    #         if isinstance(value, dict):
+    #             # например {"total": 12345}
+    #             for vk, vv in value.items():
+    #                 print(f"    {sid}.{vk}: {vv}")
+    #         else:
+    #             print(f"    {sid}: {value} ({stype})")
 
+    # --- достижения ---
+    ach = profile.get("displayedAchievements") or []
+    if ach:
+        print(f"\n  Показанные достижения ({len(ach)}):")
+        for a in ach[:10]:
+            print(f"    • {a}")
+        if len(ach) > 10:
+            print(f"    … ещё {len(ach) - 10}")
+
+    # --- отладка ---
     if opts.verbose:
         print(f"\n  Ключи ответа: {list(profile.keys())}")
+        print(f"  Первый stats-элемент: {stats[0] if stats else '—'}")
 
 
 # ──────────────────────────────────────────────────────────────────
