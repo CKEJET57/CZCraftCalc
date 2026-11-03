@@ -9,7 +9,9 @@ services/price.py — цены за штуку.
   - heartbeat в stderr
   - verbose: лог каждого HTTP-запроса
   - опционально: только /lots (без /history)
+  - сырые данные для сборщика: get_history(), get_lots()
 """
+from __future__ import annotations
 
 import statistics
 import sys
@@ -121,6 +123,54 @@ class PriceService:
         with self._lock:
             self._cache[item_id] = (info, time.time())
         return info
+
+    def get_history(self, item_id: str, limit: int | None = None) -> list[dict]:
+        """
+        Сырые сделки из /history (для сборщика истории).
+
+        Возвращает список [{price, amount, time?, additional?}, ...]
+        или [] при ошибке/пустом ответе.
+        """
+        limit = limit if limit is not None else self.history_limit
+        url = f"{EAPI_BASE}/{self.region}/auction/{item_id}/history"
+        r = self._http_get(url, {"limit": limit}, f"{item_id}/history")
+        if r is None or r.status_code != 200:
+            return []
+        try:
+            data = r.json()
+        except ValueError:
+            return []
+        # API отдаёт под ключом "prices"; fallback на "lots" — на случай смены
+        return data.get("prices") or data.get("lots") or []
+
+    def get_lots(self, item_id: str, limit: int | None = None) -> dict:
+        """
+        Сырые активные лоты из /lots (для сборщика снапшотов).
+
+        Возвращает {"total": int, "lots": list[dict]}.
+        При ошибке — {"total": 0, "lots": []}.
+        """
+        limit = limit if limit is not None else self.lots_limit
+        url = f"{EAPI_BASE}/{self.region}/auction/{item_id}/lots"
+        r = self._http_get(
+            url,
+            {"limit": limit, "additional": "true"},
+            f"{item_id}/lots",
+        )
+        if r is None or r.status_code != 200:
+            return {"total": 0, "lots": []}
+        try:
+            data = r.json()
+        except ValueError:
+            return {"total": 0, "lots": []}
+        try:
+            total = int(data.get("total") or 0)
+        except (TypeError, ValueError):
+            total = 0
+        return {
+            "total": total,
+            "lots": data.get("lots") or [],
+        }
 
     def prefetch(
         self,
