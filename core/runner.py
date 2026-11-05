@@ -1,12 +1,12 @@
 """
 core/runner.py — оркестрация анализа: единая логика для CLI и меню.
 """
+from __future__ import annotations
 
 import statistics
 import sys
 import time
 from datetime import datetime, timedelta, timezone
-from zoneinfo import ZoneInfo
 
 from config import ENERGY_ITEM_ID, EXCLUDED_TOP_CATEGORIES, LOCAL_TIMEZONE
 from core.display import (
@@ -19,6 +19,12 @@ from storage.hideout import (
 )
 from storage.listing import get_item_name
 
+
+try:
+    from zoneinfo import ZoneInfo
+    _TZ = ZoneInfo(LOCAL_TIMEZONE)
+except Exception:
+    _TZ = None
 
 # ──────────────────────────────────────────────────────────────────
 #  Перевод названий сортировки для вывода
@@ -33,18 +39,15 @@ def _sort_label(sort: str) -> str:
     return _SORT_LABEL.get(sort, sort)
 
 def _fmt_datetime(iso_str: str | None) -> str:
-    """
-    '2026-11-01T11:19:24.198Z' → '01.11.2026 14:19' (в LOCAL_TIMEZONE).
-    Если строка пустая или не парсится — возвращает как есть.
-    """
     if not iso_str:
         return "—"
     try:
         dt = datetime.fromisoformat(iso_str.replace("Z", "+00:00"))
-        local = dt.astimezone(ZoneInfo(LOCAL_TIMEZONE))
-        return local.strftime("%d.%m.%Y %H:%M")
-    except (ValueError, KeyError):
+    except ValueError:
         return iso_str
+    if _TZ is not None:
+        dt = dt.astimezone(_TZ)
+    return dt.strftime("%d.%m.%Y %H:%M")
 
 
 # ──────────────────────────────────────────────────────────────────
@@ -364,24 +367,22 @@ def run_character(name: str, opts, ctx) -> None:
         print("\n  Клан: —")
 
     # --- статистика: список {id, type, value} ---
-    # stats = profile.get("stats") or []
-    # if stats:
-    #     print("\n  Статистика:")
-    #     for s in stats:
-    #         if not isinstance(s, dict):
-    #             continue
-    #         sid = s.get("id", "?")
-    #         stype = s.get("type", "?")
-    #         value = s.get("value")
-    #         # value может быть {}, числом, строкой или dict
-    #         if value in ({}, None):
-    #             continue
-    #         if isinstance(value, dict):
-    #             # например {"total": 12345}
-    #             for vk, vv in value.items():
-    #                 print(f"    {sid}.{vk}: {vv}")
-    #         else:
-    #             print(f"    {sid}: {value} ({stype})")
+    stats = profile.get("stats") or []
+    if stats:
+        print("\n  Статистика:")
+        for s in stats:
+            if not isinstance(s, dict):
+                continue
+            sid = s.get("id", "?")
+            stype = s.get("type", "?")
+            value = s.get("value")
+            if value in ({}, None):
+                continue
+            if isinstance(value, dict):
+                for vk, vv in value.items():
+                    print(f"    {sid}.{vk}: {vv}")
+            else:
+                print(f"    {sid}: {value} ({stype})")
 
     # --- достижения ---
     ach = profile.get("displayedAchievements") or []
