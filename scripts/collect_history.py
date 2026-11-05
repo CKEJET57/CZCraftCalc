@@ -4,6 +4,7 @@ scripts/collect_history.py — сбор истории сделок и снап�
   python -m scripts.collect_history --items zz1o2 rwol5 404p --verbose
   python -m scripts.collect_history --auto --every 1800
 """
+from __future__ import annotations
 
 import argparse
 import sys
@@ -15,7 +16,7 @@ from config import DEFAULT_REGION
 from services.history_store import (
     append_deals, append_snapshot, build_snapshot,
     load_deal_hashes, load_state, normalize_deal,
-    save_state, tracked_items,
+    save_state, tracked_items, trim_old,
 )
 from services.price import PriceService
 
@@ -84,10 +85,20 @@ def collect_once(price_service: PriceService, items: list[str],
     return summary
 
 
-def run_daemon(price_service, items, interval, limit, verbose):
+def run_daemon(price_service, items, interval, limit, verbose,
+               keep_days: int | None = None):
     _log(f"Демон: itemId={len(items)}, интервал={interval}с ({interval//60}мин)")
     try:
         while True:
+            if keep_days is not None:
+                td = ts = 0
+                for iid in items:
+                    d, s = trim_old(iid, keep_days)
+                    td += d
+                    ts += s
+                if td or ts:
+                    _log(f"trim(>{keep_days}д): -{td} deals, -{ts} snapshots")
+
             t0 = time.time()
             _log(f"▶ проход ({len(items)} itemId)")
             summary = collect_once(price_service, items, limit, verbose)
@@ -104,25 +115,62 @@ def run_daemon(price_service, items, interval, limit, verbose):
 
 def main() -> int:
     p = argparse.ArgumentParser()
-    p.add_argument("--items", nargs="+", default=None)
-    p.add_argument("--auto", action="store_true")
-    p.add_argument("--every", type=int, default=None)
-    p.add_argument("--limit", type=int, default=200)
+    p.add_argument("--items", nargs="+", default=None,
+                   help="itemId (можно несколько)")
+    p.add_argument("--auto", action="store_true",
+                   help="Все itemId, для которых уже есть история")
+    p.add_argument("--all-listing", action="store_true",
+                   help="Все itemId из database/listing.json")
+    p.add_argument("--every", type=int, default=None,
+                   help="Режим демона: интервал в секундах")
+    p.add_argument("--limit", type=int, default=200,
+                   help="Сделок/лотов запрашивать у API (по умолчанию 200)")
     p.add_argument("--region", default=DEFAULT_REGION)
     p.add_argument("--verbose", action="store_true")
+    p.add_argument("--keep-days", type=int, default=None,
+                   help="Перед проходом удалять записи старше N дней")
+    p.add_argument("--dry-run", action="store_true",
+                   help="Только показать, что будет обработано")
     args = p.parse_args()
 
+    # ─── сбор itemId ───
     items: list[str] = []
     if args.items:
         items.extend(args.items)
     if args.auto:
         items.extend(tracked_items())
-    items = list(dict.fromkeys(items))
+    if args.all_listing:
+        from storage.listing import load_listing, extract_item_id
+        listing = load_listing()
+        items.extend(
+            iid for iid in (extract_item_id(x) for x in listing) if iid
+        )
+    items = list(dict.fromkeys(items))   # дедуп, с сохранением порядка
 
     if not items:
-        print("Нет itemId: --items или создай историю для --auto")
+        print("Нет itemId: --items / --auto / --all-listing")
         return 1
 
+    # ─── dry-run: без OAuth, без записи ───
+    if args.dry_run:
+        _log(f"dry-run: itemId={len(items)}")
+        for iid in items[:20]:
+            _log(f"  · {iid}")
+        if len(items) > 20:
+            _log(f"  … ещё {len(items) - 20}")
+        return 0
+
+    # ─── trim один раз (для режима демона он ещё раз сработает внутри) ───
+    if args.keep_days is not None and not args.every:
+        td = ts = 0
+        for iid in items:
+            d, s = trim_old(iid, args.keep_days)
+            td += d
+            ts += s
+        if td or ts:
+            _log(f"trim(>{args.keep_days}д): -{td} deals, -{ts} snapshots")
+
+    # ─── OAuth и запуск ───
     try:
         token = fetch_token()["access_token"]
     except Exception as e:
@@ -136,7 +184,8 @@ def main() -> int:
     )
     try:
         if args.every:
-            run_daemon(ps, items, args.every, args.limit, args.verbose)
+            run_daemon(ps, items, args.every, args.limit, args.verbose,
+                       keep_days=args.keep_days)
             return 0
         summary = collect_once(ps, items, args.limit, args.verbose)
         _log(f"✓ items={summary['items']} new_deals={summary['new_deals']} "

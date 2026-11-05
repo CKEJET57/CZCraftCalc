@@ -19,4 +19,4 @@ services:
       - ./database:/app/database
     restart: unless-stopped
     entrypoint: ["python", "-m", "scripts.collect_history"]
-    command: ["--auto", "--every", "1800", "--verbose"]
+    command: [ "--all-listing", "--every", "7200", "--keep-days", "30", "--verbose" ]
