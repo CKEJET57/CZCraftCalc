@@ -11,6 +11,7 @@ services/craft.py — анализ прибыльности рецепта с у
   - full_tree: базовые ресурсы при "всё крафтим сами" (🌳)
   - согласованное округление сумм для UI
 """
+from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
@@ -51,7 +52,7 @@ def _collect_required(node: "CostResult",
 
 
 # ---------- полное дерево: принудительно разворачиваем всё (🌳) ----------
-_SRC_PRIORITY = {"market": 0, "lots": 0, "none": 1}
+_SRC_PRIORITY = {"history": 0, "market": 0, "lots": 0, "none": 1}
 
 
 def _worse_source(a: str, b: str) -> str:

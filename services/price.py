@@ -124,27 +124,6 @@ class PriceService:
             self._cache[item_id] = (info, time.time())
         return info
 
-    def get_history(self, item_id: str, limit: int | None = None) -> list[dict]:
-        """
-        Сырые сделки из /history (для сборщика истории).
-
-        Возвращает список [{price, amount, time?, additional?}, ...]
-        или [] при ошибке/пустом ответе.
-        """
-        limit = limit if limit is not None else self.history_limit
-        url = f"{EAPI_BASE}/{self.region}/auction/{item_id}/history"
-        r = self._http_get(url, {"limit": limit}, f"{item_id}/history")
-        if r is None or r.status_code != 200:
-            return []
-        try:
-            data = r.json()
-        except ValueError:
-            return []
-        # API отдаёт под ключом "prices"; fallback на "lots" — на случай смены
-        return data.get("prices") or data.get("lots") or []
-
-
-
     def get_lots(self, item_id: str, limit: int | None = None) -> dict:
         """
         Сырые активные лоты из /lots (для сборщика снапшотов).
@@ -310,8 +289,8 @@ class PriceService:
         unit_prices = []
         for lot in lots:
             amount = lot.get("amount", 0)
-            price = lot.get("buyoutPrice") or lot.get("price")
-            if amount > 0 and price and price > 0:
+            price = lot.get("buyoutPrice") or lot.get("currentPrice") or 0
+            if amount > 0 and price > 0:
                 unit_prices.append(price / amount)
         if not unit_prices:
             return None, 0

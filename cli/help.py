@@ -30,7 +30,9 @@ def print_operations() -> None:
     _p("  recipe <item_id>          Анализ всех рецептов, дающих item_id")
     _p("                            Пример: main.py recipe wj2zp")
     _p("  history <item_id>         История покупок предмета (сырые сделки)")
-    _p("                            Пример: main.py history zz1o2 --limit 100")
+    _p("                            Пример: main.py history zz1o2 --limit 200")
+    _p("                            Флаги: --show N (на странице, дефолт 30),")
+    _p("                                   --page K (номер страницы, 0 — первая)")
     _p("  batch                     Пакетный анализ по фильтру (bench/category/perk)")
     _p("                            Пример: main.py batch --bench workbench --category ammunition")
     _p("  exclusions <action>       Управление исключениями (нулевая стоимость)")
@@ -60,7 +62,7 @@ def print_operations() -> None:
     _p("  --ignore-missing          Считать приблизительно, если не хватает цен")
     _p("  --exclude 7rp7,404p       Исключить itemId (нулевая стоимость, разово)")
     _p("  --show-ids                Показывать itemId ингредиентов")
-    _p("  (для character используется только --region и --verbose)")
+    _p("  (для character используются только --region, --lang и --verbose)")
 
     # ---------- флаги batch ----------
     _p("\n🎯 ТОЛЬКО ДЛЯ batch")
@@ -496,35 +498,38 @@ def _topic_history() -> None:
     _p("  🧾 История покупок предмета")
     _p(HEADER)
     _p("""
-  Команда:
-    python main.py history <itemId> [--limit 200] [--sort newest]
-                                  [--days 7] [--region RU]
+      Команда:
+        python main.py history <itemId> [--limit 200] [--show 30] [--page 0]
+                                      [--sort newest] [--days 7] [--region RU]
 
-  Меню:
-    главное меню → 6. История покупок → категория → предмет → опции
+      Меню:
+        главное меню → 6. История покупок → категория → предмет → опции
 
-  Что запрашивается:
-    GET /{region}/auction/{itemId}/history?limit=200
+      Что запрашивается:
+        GET /{region}/auction/{itemId}/history?limit=200
 
-  Что показывается:
-    - статистика: min / max / median / median (trim 10%)
-    - сумма и количество единиц
-    - список последних 20 сделок (дата, цена за штуку, кол-во, сумма)
+      Что показывается:
+        - статистика: min / max / median / median (trim 10%)
+        - сумма и количество единиц
+        - постраничный список сделок
 
-  Флаги:
-    --limit N        сколько сделок запросить (1-1000, по умолчанию 200)
-    --sort newest    свежие сверху (по умолчанию)
-    --sort oldest    старые сверху
-    --sort price-asc дешёвые сверху
-    --sort price-desc дорогие сверху
-    --days N         только за последние N дней
+      Флаги:
+        --limit N        сколько сделок запросить у API (1-1000, по умолчанию 200)
+        --show N         записей на странице (по умолчанию 30, 0 = все)
+        --page K         номер страницы (0 — первая)
+        --sort newest    свежие сверху (по умолчанию)
+        --sort oldest    старые сверху
+        --sort price-asc дешёвые сверху
+        --sort price-desc дорогие сверху
+        --days N         только за последние N дней
 
-  Примеры:
-    python main.py history zz1o2
-    python main.py history zz1o2 --limit 500 --sort price-asc
-    python main.py history zz1o2 --days 7
-    python main.py history zz1o2 --verbose   (покажет raw-элемент)
-""")
+      Примеры:
+        python main.py history zz1o2
+        python main.py history zz1o2 --show 50
+        python main.py history zz1o2 --limit 500 --show 100 --page 2
+        python main.py history zz1o2 --sort price-asc --days 7
+        python main.py history zz1o2 --verbose   (покажет raw-элемент)
+    """)
     _p(HEADER)
 
 # ══════════════════════════════════════════════════════════════════

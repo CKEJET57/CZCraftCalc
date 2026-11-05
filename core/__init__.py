@@ -2,7 +2,12 @@
 
 from core.context import AnalysisContext, build_context
 from core.options import AnalysisOptions
-from core.runner import run_batch, run_recipe
+from core.runner import (
+    run_batch,
+    run_character,
+    run_history,
+    run_recipe,
+)
 
 __all__ = [
     "AnalysisOptions",
@@ -10,4 +15,6 @@ __all__ = [
     "build_context",
     "run_recipe",
     "run_batch",
+    "run_history",
+    "run_character",
 ]

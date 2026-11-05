@@ -1,6 +1,7 @@
 """
 core/display.py — функции вывода (бывший cli/render.py).
 """
+from __future__ import annotations
 
 from config import ENERGY_ITEM_ID
 from services.craft import IngredientCost, RecipeAnalysis
@@ -97,8 +98,8 @@ def print_analysis(a: RecipeAnalysis, item_index: dict,
         print(f"\n  📦 Всего потребуется ({len(a.required_total)} вид., "
               f"{total_units} ед.):")
         for iid, (amt, src) in items_sorted:
-            tag = {"market": "рынок", "none": "нет",
-                   "excluded": "ноль"}.get(src, src)
+            tag = {"history": "рынок", "market": "рынок", "lots": "рынок",
+                   "none": "нет", "excluded": "ноль"}.get(src, src)
             id_part = f"{iid:6s} " if (show_ids or src == "none") else "       "
             print(f"     [{tag:5s}]  {id_part}"
                   f"{get_item_name(item_index, iid):30s} × {amt:4d}")
@@ -114,8 +115,8 @@ def print_analysis(a: RecipeAnalysis, item_index: dict,
         print(f"\n  🌳 Если всё крафтить ({len(a.full_tree)} вид., "
               f"{total_units} ед.):")
         for iid, (amt, src) in items_sorted:
-            tag = {"market": "рынок", "lots": "рынок",
-                   "none": "нет"}.get(src, src)
+            tag = {"history": "рынок", "market": "рынок", "lots": "рынок",
+                   "none": "нет", "excluded": "ноль"}.get(src, src)
             id_part = f"{iid:6s} " if (show_ids or src == "none") else "       "
             print(f"     [{tag:5s}]  {id_part}"
                   f"{get_item_name(item_index, iid):30s} × {amt:4d}")

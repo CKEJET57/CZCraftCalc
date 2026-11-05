@@ -2,6 +2,7 @@
 cli/menu.py — интерактивное меню.
 Вся логика анализа — в core/runner.py.
 """
+from __future__ import annotations
 
 import os
 import sys
@@ -165,16 +166,20 @@ class MenuSession:
         limit = 200
         sort = "newest"
         days: int | None = None
+        show = 30
+        page = 0
         while True:
             _clear()
             name = get_item_name(self._item_index, item_id, self.opts.lang)
             print(f"── История: {name} ({item_id}) ──\n")
-            print(f"  1. Лимит: {limit}")
+            print(f"  1. Лимит запроса: {limit}")
             print(f"  2. Сортировка: {sort}")
             print(f"  3. За последние дней: {days if days else 'все'}")
-            print(f"  4. ✅ Показать историю")
+            print(f"  4. На странице: {show if show > 0 else 'все'}")
+            print(f"  5. Страница: {page + 1}")
+            print(f"  6. ✅ Показать историю")
             print(f"  0. ← К списку предметов")
-            choice = _ask("\nДействие [0-4]: ")
+            choice = _ask("\nДействие [0-6]: ")
             if choice == "1":
                 v = _ask("Лимит (1-1000): ")
                 try:
@@ -196,19 +201,34 @@ class MenuSession:
                 except ValueError:
                     pass
             elif choice == "4":
-                self._run_history(item_id, limit, sort, days)
+                v = _ask("Записей на странице (0 = все): ")
+                try:
+                    n = int(v)
+                    show = n if n > 0 else 0
+                    page = 0
+                except ValueError:
+                    pass
+            elif choice == "5":
+                v = _ask(f"Страница (1..N): ")
+                try:
+                    page = max(0, int(v) - 1)
+                except ValueError:
+                    pass
+            elif choice == "6":
+                self._run_history(item_id, limit, sort, days, show, page)
                 _pause()
             elif choice in ("0", ""):
                 return
 
     def _run_history(self, item_id: str, limit: int, sort: str,
-                     days: int | None) -> None:
+                     days: int | None, show: int = 30, page: int = 0) -> None:
         _clear()
         ctx = self._context()
         from core.runner import run_history
         try:
             run_history(item_id, self.opts, ctx,
-                        limit=limit, sort=sort, days=days)
+                        limit=limit, sort=sort, days=days,
+                        show=show, page=page)
         except Exception as e:
             print(f"\n[ERROR] {type(e).__name__}: {e}")
 

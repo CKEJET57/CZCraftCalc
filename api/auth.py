@@ -7,6 +7,7 @@ api/auth.py — OAuth 2.0 client_credentials.
   - timeout=(connect, read) вместо единого
   - безопасное сообщение об ошибке (не печатает data целиком)
 """
+from __future__ import annotations
 
 import sys
 import time
