@@ -405,11 +405,12 @@ def analyze_recipe(
                 source = "none"
                 src_for_total = "none"
             else:
-                source = info.source
+                # info.source = "history" | "lots" — для UI это всё "market"
+                source = "market"
+                src_for_total = "market"
                 unit_disp, total_disp = _display_prices(
                     info.unit_price, ing["amount"]
                 )
-                src_for_total = source
             prev, prev_src = required_total.get(ing["item"], (0, src_for_total))
             required_total[ing["item"]] = (prev + ing["amount"], prev_src)
             prev, prev_src = full_tree.get(ing["item"], (0, src_for_total))

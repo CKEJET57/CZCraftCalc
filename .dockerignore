@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.git/
+.env
+database/history/
+database/exclusions.json
+.venv/
+venv/
+.idea/
+.vscode/
+*.log

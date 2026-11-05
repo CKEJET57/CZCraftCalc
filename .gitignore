@@ -1,0 +1,51 @@
+# ─── Секреты ───
+.env
+.env.*
+!.env.example
+
+# ─── Python ───
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+
+# ─── Виртуальные окружения ───
+.venv/
+venv/
+ENV/
+env/
+
+# ─── IDE ───
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ─── Данные приложения ───
+database/history/        # история сделок — это данные, а не код
+database/exclusions.json # личные исключения
+*.log
+
+# ─── OS ───
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Тесты / покрытие ───
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ─── Docker ───
+docker-compose.override.yml
+
+# ─── Прочее ───
+*.bak
+*.tmp

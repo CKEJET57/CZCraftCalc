@@ -22,8 +22,9 @@ def print_ingredient_line(ing: IngredientCost, indent: int = 2,
                           explain: bool = False,
                           show_ids: bool = False) -> None:
     pad = " " * indent
-    tag = {"market": "рынок", "craft": "крафт",
-           "none": "нет", "excluded": "ноль"}[ing.source]
+    tag = {"history": "рынок", "market": "рынок", "lots": "рынок",
+           "craft": "крафт", "none": "нет",
+           "excluded": "ноль"}.get(ing.source, ing.source)
     is_abnormal = (ing.source in ("none", "excluded")
                    or ing.name.startswith("[неизвестный"))
     id_col = f"{ing.item_id:6s} " if (show_ids or is_abnormal) else "       "
