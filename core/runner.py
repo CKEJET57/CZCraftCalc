@@ -73,7 +73,7 @@ def _prefetch(ctx, recipes: list[dict], opts) -> None:
     else:
         items = _direct_items(recipes, ctx.exclusions)
 
-    todo = [i for i in items if not ctx.price_service._is_cached(i)]
+    todo = [i for i in items if not ctx.price_service.is_cached(i)]
     if not todo:
         print(f"→ Все {len(items)} itemId в кэше")
         return
@@ -226,8 +226,10 @@ def run_batch(opts, ctx, recipes: list[dict], *,
 def run_history(item_id: str, opts, ctx,
                 limit: int = 200,
                 sort: str = "newest",
-                days: int | None = None) -> None:
-    """История покупок предмета с статистикой и списком сделок."""
+                days: int | None = None,
+                show: int = 30,
+                page: int = 0) -> None:
+    """История покупок предмета с статистикой и постраничным списком сделок."""
     history = ctx.price_service.get_history(item_id, limit)
     name = get_item_name(ctx.item_index, item_id, opts.lang)
 
@@ -304,16 +306,46 @@ def run_history(item_id: str, opts, ctx,
     print(f"     median:           {fmt_price(median_all)}")
     print(f"     median (trim10%): {fmt_price(median_trim)}")
 
-    # --- список сделок ---
-    show = min(20, n)
-    label = "последние" if sort in ("newest", "price-desc") else "первые"
-    print(f"\n  📋 {label} {show} сделок:")
-    for i, d in enumerate(deals[:show], 1):
+    # --- постраничный вывод ---
+    if show <= 0:
+        show_n = n
+        page = 0
+        total_pages = 1
+    else:
+        show_n = show
+        total_pages = max(1, (n + show_n - 1) // show_n)
+        page = max(0, min(page, total_pages - 1))
+
+    start = page * show_n
+    end = min(start + show_n, n)
+
+    labels = {
+        "newest": "последние",
+        "oldest": "первые",
+        "price-asc": "самые дешёвые",
+        "price-desc": "самые дорогие",
+    }
+    label = labels.get(sort, "первые")
+
+    if total_pages > 1:
+        print(f"\n  📋 {label} ({start + 1}–{end} из {n}, "
+              f"стр. {page + 1}/{total_pages}):")
+    else:
+        print(f"\n  📋 {label} {show_n} сделок:")
+
+    for i, d in enumerate(deals[start:end], start + 1):
         when = _fmt_datetime(d["time"]) if d["time"] else "—"
-        print(f"    {i:2d}. {when:20s}  {fmt_price(d['unit']):>10s}/шт  "
+        print(f"    {i:3d}. {when:20s}  {fmt_price(d['unit']):>10s}/шт  "
               f"× {d['amount']:4d}  = {fmt_price(d['price']):>12s}")
-    if n > show:
-        print(f"    … ещё {n - show} (увеличь --limit)")
+
+    if total_pages > 1:
+        nav = []
+        if page > 0:
+            nav.append(f"--page {page - 1} (назад)")
+        if page < total_pages - 1:
+            nav.append(f"--page {page + 1} (вперёд)")
+        if nav:
+            print(f"\n  💡 {' · '.join(nav)}")
 
     if opts.verbose:
         print(f"\n  Первый raw-элемент: {history[0]}")

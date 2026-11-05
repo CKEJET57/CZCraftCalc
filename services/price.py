@@ -143,6 +143,8 @@ class PriceService:
         # API отдаёт под ключом "prices"; fallback на "lots" — на случай смены
         return data.get("prices") or data.get("lots") or []
 
+
+
     def get_lots(self, item_id: str, limit: int | None = None) -> dict:
         """
         Сырые активные лоты из /lots (для сборщика снапшотов).
@@ -206,6 +208,10 @@ class PriceService:
                 "max_requests": self.max_requests,
                 "elapsed": time.time() - self._started_at,
             }
+
+    def is_cached(self, item_id: str) -> bool:
+        """Публичный алиас для _is_cached()."""
+        return self._is_cached(item_id)
 
     # ---------------- внутреннее ----------------
     def _is_cached(self, item_id: str) -> bool:

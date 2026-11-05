@@ -1,12 +1,11 @@
 """
 storage/hideout.py — загрузка и фильтрация hideout_recipes.json.
 """
+from __future__ import annotations
 
 import json
 
-from config import BASE_DIR
-
-HIDEOUT_FILE = BASE_DIR / "database" / "hideout_recipes.json"
+from config import HIDEOUT_FILE
 
 
 def load_hideout_recipes() -> dict:

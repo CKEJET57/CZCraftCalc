@@ -13,6 +13,7 @@ from config import DEFAULT_REGION
 from core.context import build_context
 from core.options import AnalysisOptions
 from core.runner import run_batch, run_character, run_history, run_recipe
+from api.errors import ApiAuthError
 from storage.exclusions import (
     add_exclusions, clear_exclusions, load_exclusions, remove_exclusions,
 )
@@ -64,14 +65,21 @@ def cmd_exclusions(args) -> int:
         return 0
     return 1
 
+
 def cmd_character(args) -> int:
-    opts = AnalysisOptions.from_args(args)
+    # character использует только region, lang, verbose
+    opts = AnalysisOptions(
+        region=args.region,
+        lang=args.lang,
+        verbose=getattr(args, "verbose", False),
+    )
     ctx = build_context(opts)
     try:
         run_character(args.name, opts, ctx)
     finally:
         ctx.close()
     return 0
+
 
 def cmd_recipe(args) -> int:
     opts = AnalysisOptions.from_args(args)
@@ -82,12 +90,14 @@ def cmd_recipe(args) -> int:
         ctx.close()
     return 0
 
+
 def cmd_history(args) -> int:
     opts = AnalysisOptions.from_args(args)
     ctx = build_context(opts)
     try:
         run_history(args.item_id, opts, ctx,
-                    limit=args.limit, sort=args.sort, days=args.days)
+                    limit=args.limit, sort=args.sort, days=args.days,
+                    show=args.show, page=args.page)
     finally:
         ctx.close()
     return 0
@@ -115,9 +125,16 @@ def cmd_batch(args) -> int:
 
 
 # ────────── entrypoint ──────────
-def add_common_args(p: argparse.ArgumentParser) -> None:
+def add_network_args(p: argparse.ArgumentParser) -> None:
+    """Только сетевые параметры — для character."""
     p.add_argument("--region", default=DEFAULT_REGION)
     p.add_argument("--lang", default="ru")
+    p.add_argument("--verbose", action="store_true")
+
+
+def add_analysis_args(p: argparse.ArgumentParser) -> None:
+    """Полный набор — для recipe, history, batch."""
+    add_network_args(p)
     p.add_argument("--fee", type=float, default=5.0,
                    help="Комиссия аукциона, %% (по умолчанию 5)")
     p.add_argument("--recursive", action="store_true")
@@ -127,7 +144,6 @@ def add_common_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--max-requests", type=int, default=500)
     p.add_argument("--workers", type=int, default=4)
     p.add_argument("--no-heartbeat", action="store_true")
-    p.add_argument("--verbose", action="store_true")
     p.add_argument("--explain", action="store_true")
     p.add_argument("--explain-tree", action="store_true")
     p.add_argument("--ignore-missing", action="store_true")
@@ -168,25 +184,27 @@ def main() -> int:
 
     p1 = sub.add_parser("recipe", help="Анализ рецептов по itemId")
     p1.add_argument("item_id")
-    add_common_args(p1)
+    add_analysis_args(p1)
     p1.set_defaults(func=cmd_recipe)
 
     ph = sub.add_parser("history", help="История покупок предмета")
     ph.add_argument("item_id")
     ph.add_argument("--limit", type=int, default=200,
-                    help="Сколько сделок запросить (по умолчанию 200)")
+                    help="Сколько сделок запросить у API (по умолчанию 200)")
+    ph.add_argument("--show", type=int, default=30,
+                    help="Записей на странице (по умолчанию 30, 0 = все)")
+    ph.add_argument("--page", type=int, default=0,
+                    help="Номер страницы (0 — первая)")
     ph.add_argument("--sort",
                     choices=["newest", "oldest", "price-asc", "price-desc"],
-                    default="newest",
-                    help="Сортировка (по умолчанию newest)")
-    ph.add_argument("--days", type=int, default=None,
-                    help="Только за последние N дней")
-    add_common_args(ph)
+                    default="newest")
+    ph.add_argument("--days", type=int, default=None)
+    add_analysis_args(ph)
     ph.set_defaults(func=cmd_history)
 
     pc = sub.add_parser("character", help="Публичный профиль персонажа по имени")
     pc.add_argument("name", help="Ник персонажа")
-    add_common_args(pc)
+    add_network_args(pc)
     pc.set_defaults(func=cmd_character)
 
     p2 = sub.add_parser("batch", help="Пакетный анализ по фильтру")
@@ -198,12 +216,16 @@ def main() -> int:
     p2.add_argument("--max-recipes", type=int, default=None)
     p2.add_argument("--sort", choices=["margin", "profit"], default="margin")
     p2.add_argument("--per-category", action="store_true")
-    add_common_args(p2)
+    add_analysis_args(p2)
     p2.set_defaults(func=cmd_batch)
 
     args = p.parse_args()
     try:
         return args.func(args)
+    except ApiAuthError as e:
+        print(f"\n[401] {e}\n"
+              f"Токен протух. Перезапустите — новый получится автоматически.")
+        return 2
     except requests.HTTPError as e:
         print(f"\n[HTTP ERROR] {e.response.status_code}: {e.response.text[:300]}")
         return 1

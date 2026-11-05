@@ -1,9 +1,21 @@
-from urllib.parse import quote
+"""
+api/characters.py — публичный профиль персонажа.
+"""
+
 import requests
+from urllib.parse import quote
+
+from api.errors import ApiAuthError
 from config import EAPI_BASE
 
 
 def fetch_character_profile(token: str, region: str, name: str) -> dict | None:
+    """
+    GET /{region}/character/by-name/{name}/profile
+
+    Возвращает dict с профилем или None, если персонаж не найден (404).
+    Бросает ApiAuthError при 401 (неверный токен).
+    """
     safe_name = quote(name, safe="")
     url = f"{EAPI_BASE}/{region}/character/by-name/{safe_name}/profile"
     resp = requests.get(
@@ -17,6 +29,6 @@ def fetch_character_profile(token: str, region: str, name: str) -> dict | None:
     if resp.status_code == 404:
         return None
     if resp.status_code == 401:
-        raise RuntimeError("401 Unauthorized — токен недействителен")
+        raise ApiAuthError("401 — токен недействителен")
     resp.raise_for_status()
     return resp.json()
