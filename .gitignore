@@ -28,8 +28,8 @@ env/
 *~
 
 # ─── Данные приложения ───
-database/history/        # история сделок — это данные, а не код
-database/exclusions.json # личные исключения
+database/history/
+database/exclusions.json
 *.log
 
 # ─── OS ───
