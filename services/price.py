@@ -238,8 +238,11 @@ class PriceService:
                 except (TypeError, ValueError, OverflowError):
                     delay = None
 
-        if delay is None:
-            delay = self.retry_backoff * (2 ** attempt)
+        if delay is not None:
+            # Не сокращаем паузу, которую явно запросил сервер.
+            return max(0.0, delay)
+
+        delay = self.retry_backoff * (2 ** attempt)
         return min(max(0.0, delay), self.max_retry_delay)
 
     def _http_get(self, url: str, params: dict, label: str) -> requests.Response | None:
