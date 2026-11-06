@@ -12,6 +12,7 @@ import time
 from datetime import datetime, timezone
 
 from api.auth import fetch_token
+from api.errors import ApiAuthError, ApiRateLimitError
 from config import DEFAULT_REGION
 from services.history_store import (
     append_deals, append_snapshot, build_snapshot,
@@ -38,6 +39,8 @@ def collect_once(price_service: PriceService, items: list[str],
         # ─── 1. Deals ───
         try:
             history = price_service.get_history(item_id, limit)
+        except (ApiAuthError, ApiRateLimitError):
+            raise
         except Exception as e:
             summary["errors"] += 1
             _log(f"  ✗ {item_id}/history: {type(e).__name__}: {e}")
@@ -57,6 +60,8 @@ def collect_once(price_service: PriceService, items: list[str],
         # ─── 2. Snapshot ───
         try:
             lots_data = price_service.get_lots(item_id, limit)
+        except (ApiAuthError, ApiRateLimitError):
+            raise
         except Exception as e:
             summary["errors"] += 1
             _log(f"  ✗ {item_id}/lots: {type(e).__name__}: {e}")
@@ -174,6 +179,9 @@ def main() -> int:
     # ─── OAuth и запуск ───
     try:
         token = fetch_token()["access_token"]
+    except ApiAuthError as e:
+        print(f"[FATAL] Ошибка авторизации OAuth: {e}")
+        return 2
     except Exception as e:
         print(f"[FATAL] OAuth: {type(e).__name__}: {e}")
         return 1
@@ -192,6 +200,12 @@ def main() -> int:
         _log(f"✓ items={summary['items']} new_deals={summary['new_deals']} "
              f"snapshots={summary['snapshots']} errors={summary['errors']}")
         return 0
+    except ApiAuthError as e:
+        _log(f"✗ Ошибка авторизации API: {e}")
+        return 2
+    except ApiRateLimitError as e:
+        _log(f"✗ API ограничил частоту запросов: {e}")
+        return 3
     finally:
         ps.stop_heartbeat()
 
