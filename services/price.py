@@ -82,6 +82,7 @@ class PriceService:
         })
         self._cache: dict[str, tuple[PriceInfo, float]] = {}
         self._lock = threading.Lock()
+        self._closed = False
         self._requests_made = 0
         self._started_at = time.time()
         self._last_activity = time.time()
@@ -103,7 +104,11 @@ class PriceService:
             self._hb_thread.join(timeout=1.0)
 
     def close(self) -> None:
-        """Останавливает фоновые задачи и закрывает HTTP-сессию."""
+        """Останавливает фоновые задачи и один раз закрывает HTTP-сессию."""
+        with self._lock:
+            if self._closed:
+                return
+            self._closed = True
         self.stop_heartbeat()
         self._session.close()
 
