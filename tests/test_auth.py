@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import pytest
 
 import api.auth as auth_mod
+from api.errors import ApiAuthError
 
 
 def test_retry_on_5xx(monkeypatch):
@@ -40,6 +41,6 @@ def test_no_retry_on_401(monkeypatch):
     monkeypatch.setattr(auth_mod, "_get_session", lambda: fake_session)
     monkeypatch.setattr(auth_mod.time, "sleep", lambda s: None)
 
-    with pytest.raises(RuntimeError, match="401"):
+    with pytest.raises(ApiAuthError, match="401"):
         auth_mod.fetch_token()
     auth_mod._session = None
