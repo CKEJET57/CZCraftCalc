@@ -152,6 +152,7 @@ def test_close_closes_http_session(make_price_service):
     ps._session = session
 
     ps.close()
+    ps.close()
 
     session.close.assert_called_once()
 
