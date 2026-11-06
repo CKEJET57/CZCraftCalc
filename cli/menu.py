@@ -70,6 +70,8 @@ class MenuSession:
         if self._price_service is None or self._region != self.opts.region:
             with phase("OAuth: токен"):
                 token = fetch_token()["access_token"]
+            if self._price_service is not None:
+                self._price_service.close()
             self._price_service = PriceService(
                 token,
                 region=self.opts.region,
@@ -260,7 +262,7 @@ class MenuSession:
 
     def _shutdown(self) -> None:
         if self._price_service is not None:
-            self._price_service.stop_heartbeat()
+            self._price_service.close()
 
     # ────────── главное меню ──────────
     def run(self) -> None:
