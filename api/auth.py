@@ -14,6 +14,7 @@ import time
 
 import requests
 
+from api.errors import ApiAuthError
 from config import CLIENT_ID, CLIENT_SECRET, OAUTH_URL
 
 _session: requests.Session | None = None
@@ -69,7 +70,7 @@ def fetch_token(max_retries: int = 3, verbose: bool = False) -> dict:
         # 4xx — не retry, сразу ошибка
         if 400 <= resp.status_code < 500:
             if resp.status_code == 401:
-                raise RuntimeError(
+                raise ApiAuthError(
                     "401 OAuth: неверный client_id или client_secret. "
                     "Проверьте .env / переменные окружения."
                 )
