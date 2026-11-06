@@ -19,11 +19,14 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from dataclasses import dataclass
 from typing import Callable, Iterable
 
 import requests
 
+from api.errors import ApiAuthError, ApiRateLimitError
 from config import DEFAULT_REGION, EAPI_BASE
 
 
@@ -51,6 +54,9 @@ class PriceService:
         heartbeat: bool = True,
         heartbeat_interval: float = 5.0,
         verbose: bool = False,
+        max_retries: int = 3,
+        retry_backoff: float = 1.0,
+        max_retry_delay: float = 30.0,
     ):
         self.token = token
         self.region = region
@@ -65,6 +71,9 @@ class PriceService:
         self.heartbeat_enabled = heartbeat
         self.heartbeat_interval = heartbeat_interval
         self.verbose = verbose
+        self.max_retries = max(1, int(max_retries))
+        self.retry_backoff = max(0.0, float(retry_backoff))
+        self.max_retry_delay = max(0.0, float(max_retry_delay))
 
         self._session = requests.Session()
         self._session.headers.update({
@@ -171,6 +180,8 @@ class PriceService:
                 iid = futures[fut]
                 try:
                     fut.result()
+                except ApiAuthError:
+                    raise
                 except Exception as e:
                     if self.verbose:
                         sys.stderr.write(f"  ! fail {iid}: {e}\n")
@@ -198,30 +209,94 @@ class PriceService:
             hit = self._cache.get(item_id)
             return bool(hit and time.time() - hit[1] < self.ttl)
 
-    def _http_get(self, url: str, params: dict, label: str) -> requests.Response | None:
-        with self._lock:
-            if self._requests_made >= self.max_requests:
-                if self.verbose:
-                    sys.stderr.write(f"  ! budget exhausted, skip {label}\n")
-                return None
-            self._requests_made += 1
-        self._touch(label)
+    def _retry_delay(self, attempt: int, response=None) -> float:
+        """Возвращает задержку по Retry-After или экспоненциальной схеме."""
+        retry_after = None
+        if response is not None:
+            retry_after = response.headers.get("Retry-After")
 
-        t0 = time.time()
-        try:
-            r = self._session.get(url, params=params, timeout=20)
-        except requests.RequestException as e:
+        delay = None
+        if retry_after is not None:
+            try:
+                delay = float(retry_after)
+            except (TypeError, ValueError):
+                try:
+                    retry_at = parsedate_to_datetime(retry_after)
+                    if retry_at.tzinfo is None:
+                        retry_at = retry_at.replace(tzinfo=timezone.utc)
+                    delay = (retry_at - datetime.now(timezone.utc)).total_seconds()
+                except (TypeError, ValueError, OverflowError):
+                    delay = None
+
+        if delay is None:
+            delay = self.retry_backoff * (2 ** attempt)
+        return min(max(0.0, delay), self.max_retry_delay)
+
+    def _http_get(self, url: str, params: dict, label: str) -> requests.Response | None:
+        last_response = None
+        for attempt in range(self.max_retries):
+            with self._lock:
+                if self._requests_made >= self.max_requests:
+                    if self.verbose:
+                        sys.stderr.write(f"  ! budget exhausted, skip {label}\\n")
+                    if last_response is not None and last_response.status_code == 429:
+                        raise ApiRateLimitError(
+                            f"429 — лимит запросов API исчерпан при обращении к {label}"
+                        )
+                    return None
+                self._requests_made += 1
+            self._touch(label)
+
+            t0 = time.time()
+            try:
+                response = self._session.get(url, params=params, timeout=20)
+            except requests.RequestException as e:
+                if self.verbose:
+                    dt = time.time() - t0
+                    sys.stderr.write(f"  [GET] {label:22s} → ERR ({dt:.2f}s) "
+                                     f"{type(e).__name__}\\n")
+                if attempt + 1 < self.max_retries:
+                    delay = self._retry_delay(attempt)
+                    if self.verbose:
+                        sys.stderr.write(f"  [GET] повтор через {delay:.1f}s\\n")
+                    time.sleep(delay)
+                    continue
+                return None
+
+            last_response = response
+            if response.status_code == 401:
+                raise ApiAuthError(
+                    "401 — токен STALCRAFT API недействителен или истёк"
+                )
+
+            if response.status_code == 429:
+                if attempt + 1 < self.max_retries:
+                    delay = self._retry_delay(attempt, response)
+                    if self.verbose:
+                        sys.stderr.write(f"  [GET] {label:22s} → 429, повтор через {delay:.1f}s\\n")
+                    time.sleep(delay)
+                    continue
+                raise ApiRateLimitError(
+                    f"429 — API ограничил частоту запросов для {label} "
+                    f"после {self.max_retries} попыток"
+                )
+
+            if response.status_code >= 500 and attempt + 1 < self.max_retries:
+                delay = self._retry_delay(attempt)
+                if self.verbose:
+                    sys.stderr.write(
+                        f"  [GET] {label:22s} → {response.status_code}, "
+                        f"повтор через {delay:.1f}s\\n"
+                    )
+                time.sleep(delay)
+                continue
+
             if self.verbose:
                 dt = time.time() - t0
-                sys.stderr.write(f"  [GET] {label:22s} → ERR ({dt:.2f}s) "
-                                 f"{type(e).__name__}\n")
-            return None
+                sys.stderr.write(f"  [GET] {label:22s} → {response.status_code} ({dt:.2f}s)\\n")
+            return response
 
-        if self.verbose:
-            dt = time.time() - t0
-            sys.stderr.write(f"  [GET] {label:22s} → {r.status_code} ({dt:.2f}s)\n")
-        return r
-
+        return last_response
     def _fetch(self, item_id: str) -> PriceInfo:
         if self.use_history:
             median, samples = self._history_median(item_id)
