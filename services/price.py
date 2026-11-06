@@ -238,7 +238,7 @@ class PriceService:
             with self._lock:
                 if self._requests_made >= self.max_requests:
                     if self.verbose:
-                        sys.stderr.write(f"  ! budget exhausted, skip {label}\\n")
+                        sys.stderr.write(f"  ! budget exhausted, skip {label}\n")
                     if last_response is not None and last_response.status_code == 429:
                         raise ApiRateLimitError(
                             f"429 — лимит запросов API исчерпан при обращении к {label}"
@@ -254,11 +254,11 @@ class PriceService:
                 if self.verbose:
                     dt = time.time() - t0
                     sys.stderr.write(f"  [GET] {label:22s} → ERR ({dt:.2f}s) "
-                                     f"{type(e).__name__}\\n")
+                                     f"{type(e).__name__}\n")
                 if attempt + 1 < self.max_retries:
                     delay = self._retry_delay(attempt)
                     if self.verbose:
-                        sys.stderr.write(f"  [GET] повтор через {delay:.1f}s\\n")
+                        sys.stderr.write(f"  [GET] повтор через {delay:.1f}s\n")
                     time.sleep(delay)
                     continue
                 return None
@@ -273,7 +273,7 @@ class PriceService:
                 if attempt + 1 < self.max_retries:
                     delay = self._retry_delay(attempt, response)
                     if self.verbose:
-                        sys.stderr.write(f"  [GET] {label:22s} → 429, повтор через {delay:.1f}s\\n")
+                        sys.stderr.write(f"  [GET] {label:22s} → 429, повтор через {delay:.1f}s\n")
                     time.sleep(delay)
                     continue
                 raise ApiRateLimitError(
@@ -286,14 +286,14 @@ class PriceService:
                 if self.verbose:
                     sys.stderr.write(
                         f"  [GET] {label:22s} → {response.status_code}, "
-                        f"повтор через {delay:.1f}s\\n"
+                        f"повтор через {delay:.1f}s\n"
                     )
                 time.sleep(delay)
                 continue
 
             if self.verbose:
                 dt = time.time() - t0
-                sys.stderr.write(f"  [GET] {label:22s} → {response.status_code} ({dt:.2f}s)\\n")
+                sys.stderr.write(f"  [GET] {label:22s} → {response.status_code} ({dt:.2f}s)\n")
             return response
 
         return last_response
