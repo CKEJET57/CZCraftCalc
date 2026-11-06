@@ -122,6 +122,40 @@ def test_429_raises_after_retries(make_price_service, monkeypatch):
     assert ps._session.get.call_count == 2
 
 
+def test_5xx_retries_before_returning_success(make_price_service, monkeypatch):
+    ps = make_price_service(max_retries=2, retry_backoff=0)
+    ps._session = Mock()
+    ok = _resp(200, {"prices": [{"price": 100, "amount": 1}]})
+    ps._session.get = Mock(side_effect=[_resp(503, {}), ok])
+    sleeps = []
+    monkeypatch.setattr("services.price.time.sleep", lambda delay: sleeps.append(delay))
+
+    result = ps.get_history("x")
+
+    assert len(result) == 1
+    assert ps._session.get.call_count == 2
+    assert sleeps == [0.0]
+
+
+def test_prefetch_propagates_rate_limit_error(make_price_service):
+    ps = make_price_service(max_retries=1)
+    ps._session = Mock()
+    ps._session.get = Mock(return_value=_resp(429, {}))
+
+    with pytest.raises(ApiRateLimitError, match="429"):
+        ps.prefetch(["x"], workers=1)
+
+
+def test_close_closes_http_session(make_price_service):
+    ps = make_price_service()
+    session = Mock()
+    ps._session = session
+
+    ps.close()
+
+    session.close.assert_called_once()
+
+
 def test_get_history_parses_response(make_price_service):
     ps = make_price_service()
     ps._session = Mock()
