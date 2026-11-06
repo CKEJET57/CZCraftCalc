@@ -21,7 +21,7 @@ class AnalysisContext:
     exclusions: set[str]
 
     def close(self) -> None:
-        self.price_service.stop_heartbeat()
+        self.price_service.close()
 
 
 def build_context(opts) -> AnalysisContext:
