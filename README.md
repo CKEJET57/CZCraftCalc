@@ -342,7 +342,7 @@ python -m scripts.collect_history --all-listing --dry-run
 python -m scripts.collect_history --all-listing --every 1800 --verbose
 
 # Собирать все предметы из listing_craft каждые 2 часа,
-# запрашивать до 1000 записей и хранить данные за последние 30 дней
+# запрашивать до 200 записей и хранить данные за последние 30 дней
 python -m scripts.collect_history --all-listing --every 7200 --limit 200 --keep-days 30
 ~~~
 
