@@ -13,7 +13,7 @@ from config import DEFAULT_REGION
 from core.context import build_context
 from core.options import AnalysisOptions
 from core.runner import run_batch, run_character, run_history, run_recipe
-from api.errors import ApiAuthError
+from api.errors import ApiAuthError, ApiRateLimitError
 from storage.exclusions import (
     add_exclusions, clear_exclusions, load_exclusions, remove_exclusions,
 )
@@ -223,9 +223,13 @@ def main() -> int:
     try:
         return args.func(args)
     except ApiAuthError as e:
-        print(f"\n[401] {e}\n"
-              f"Токен протух. Перезапустите — новый получится автоматически.")
+        print(f"\n[401] Ошибка авторизации: {e}\n"
+              "Проверьте OAuth-настройки и актуальность учётных данных.")
         return 2
+    except ApiRateLimitError as e:
+        print(f"\n[429] {e}\n"
+              "API временно ограничил частоту запросов. Повторите операцию позже.")
+        return 3
     except requests.HTTPError as e:
         print(f"\n[HTTP ERROR] {e.response.status_code}: {e.response.text[:300]}")
         return 1
