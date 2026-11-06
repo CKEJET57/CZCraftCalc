@@ -158,3 +158,17 @@ def test_analyze_recipe_with_craft_calc(make_calc, make_index):
     assert a.required_total == {"c": (1, "market")}
     # full_tree — то же самое (c — база, b крафтится, a — верх)
     assert a.full_tree == {"c": (1, "market")}
+
+# ────────────────────────────────────────────────────────────
+#  Округление отображаемых цен
+# ────────────────────────────────────────────────────────────
+def test_analyze_recipe_rounds_unit_price_before_total(fake_price_service, make_index):
+    recipe = _recipe(ingredients=[{"item": "b", "amount": 3}])
+    index = make_index({"a": "A", "b": "B"})
+    ps = fake_price_service({"a": 100.0, "b": 10.6})
+
+    analysis = analyze_recipe(recipe, index, ps)
+
+    assert analysis.ingredients[0].unit_price == 11.0
+    assert analysis.ingredients[0].total_price == 33.0
+    assert analysis.ingredients_cost == 33.0
