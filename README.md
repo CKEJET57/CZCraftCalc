@@ -231,7 +231,7 @@ python main.py history <itemId> [параметры]
 
 ~~~bash
 python main.py history zz1o2
-python main.py history zz1o2 --limit 500 --show 50
+python main.py history zz1o2 --limit 200 --show 50
 python main.py history zz1o2 --sort price-asc --days 7
 python main.py history zz1o2 --sort oldest --page 2
 ~~~
@@ -240,7 +240,7 @@ python main.py history zz1o2 --sort oldest --page 2
 
 | Параметр | Назначение |
 |---|---|
-| --limit N | Сколько сделок запросить у API (по умолчанию 200) |
+| --limit N | Сколько сделок запросить у API (от 1 до 200; по умолчанию 200) |
 | --show N | Сколько записей показывать на странице (по умолчанию 30; 0 — все) |
 | --page N | Номер страницы, начиная с 0 |
 | --sort newest | Сначала новые сделки (по умолчанию) |
@@ -343,7 +343,7 @@ python -m scripts.collect_history --all-listing --every 1800 --verbose
 
 # Собирать все предметы из listing_craft каждые 2 часа,
 # запрашивать до 1000 записей и хранить данные за последние 30 дней
-python -m scripts.collect_history --all-listing --every 7200 --limit 1000 --keep-days 30
+python -m scripts.collect_history --all-listing --every 7200 --limit 200 --keep-days 30
 ~~~
 
 Параметры сборщика:
@@ -354,7 +354,7 @@ python -m scripts.collect_history --all-listing --every 7200 --limit 1000 --keep
 | --auto | Все предметы, для которых уже есть локальные файлы истории |
 | --all-listing | Все предметы из database/listing_craft.json |
 | --every SECONDS | Повторять сбор с указанным интервалом; включает режим демона |
-| --limit N | Лимит сделок/лотов на запрос (по умолчанию 200) |
+| --limit N | Лимит сделок/лотов на запрос (от 1 до 200; по умолчанию 200) |
 | --region REGION | Регион API |
 | --verbose | Подробные сообщения |
 | --keep-days N | Удалять записи старше N дней |
@@ -406,11 +406,14 @@ docker compose run --rm cli history zz1o2 --days 7
 
 Сервис collector в docker-compose.yml настроен для постоянного сбора данных по всем предметам из database/listing_craft.json:
 
+STALCRAFT API принимает параметр limit не более 200 для этих конечных точек. Значения выше 200 приводят к HTTP 400 Bad Request.
+
+
 | Настройка | Значение |
 |---|---:|
 | Список предметов | Все записи из listing_craft.json |
 | Интервал между проходами | 7200 секунд (2 часа) |
-| Лимит API на запрос | До 1000 записей |
+| Лимит API на запрос | До 200 записей |
 | Срок хранения локальной истории | 30 дней |
 | Перезапуск после сбоя или перезагрузки Docker | Включён (unless-stopped) |
 
