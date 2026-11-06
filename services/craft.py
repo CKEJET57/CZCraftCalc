@@ -339,6 +339,7 @@ def _display_prices(unit_price: float | None,
                     amount: int) -> tuple[float | None, float | None]:
     if unit_price is None:
         return None, None
+    u = round(unit_price)
     return float(u), float(u * amount)
 
 
