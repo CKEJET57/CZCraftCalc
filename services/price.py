@@ -19,9 +19,9 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
-from dataclasses import dataclass
 from typing import Callable, Iterable
 
 import requests
@@ -101,6 +101,11 @@ class PriceService:
         self._hb_stop.set()
         if self._hb_thread is not None:
             self._hb_thread.join(timeout=1.0)
+
+    def close(self) -> None:
+        """Останавливает фоновые задачи и закрывает HTTP-сессию."""
+        self.stop_heartbeat()
+        self._session.close()
 
     def _heartbeat_loop(self) -> None:
         while not self._hb_stop.wait(self.heartbeat_interval):
