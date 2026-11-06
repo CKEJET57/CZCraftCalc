@@ -80,4 +80,4 @@ def make_price_service():
     yield make
 
     for ps in created:
-        ps.stop_heartbeat()
+        ps.close()
