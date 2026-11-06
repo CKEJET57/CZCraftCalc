@@ -180,7 +180,7 @@ class PriceService:
                 iid = futures[fut]
                 try:
                     fut.result()
-                except ApiAuthError:
+                except (ApiAuthError, ApiRateLimitError):
                     raise
                 except Exception as e:
                     if self.verbose:
