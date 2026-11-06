@@ -91,6 +91,14 @@ def test_api_401_raises_auth_error(make_price_service):
         ps.get_history("x")
 
 
+def test_retry_after_is_not_shortened(make_price_service):
+    ps = make_price_service(max_retry_delay=5)
+    response = _resp(429, {})
+    response.headers["Retry-After"] = "45"
+
+    assert ps._retry_delay(0, response) == 45.0
+
+
 def test_429_retries_and_honors_retry_after(make_price_service, monkeypatch):
     ps = make_price_service(max_retries=2, retry_backoff=0)
     ps._session = Mock()
