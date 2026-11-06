@@ -207,7 +207,7 @@ def main() -> int:
         _log(f"✗ API ограничил частоту запросов: {e}")
         return 3
     finally:
-        ps.stop_heartbeat()
+        ps.close()
 
 
 if __name__ == "__main__":
