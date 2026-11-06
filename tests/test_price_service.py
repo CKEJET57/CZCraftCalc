@@ -1,5 +1,8 @@
 from unittest.mock import Mock
 
+import pytest
+
+from api.errors import ApiAuthError, ApiRateLimitError
 from services.price import PriceService
 
 
@@ -7,6 +10,7 @@ def _resp(status: int = 200, data: dict | None = None) -> Mock:
     r = Mock()
     r.status_code = status
     r.text = ""
+    r.headers = {}
     r.json = Mock(return_value=data or {})
     return r
 
@@ -76,6 +80,46 @@ def test_cache_hit(make_price_service):
     ps.get("x")
     ps.get("x")
     assert calls["n"] == 1
+
+
+def test_api_401_raises_auth_error(make_price_service):
+    ps = make_price_service()
+    ps._session = Mock()
+    ps._session.get = Mock(return_value=_resp(401, {}))
+
+    with pytest.raises(ApiAuthError, match="401"):
+        ps.get_history("x")
+
+
+def test_429_retries_and_honors_retry_after(make_price_service, monkeypatch):
+    ps = make_price_service(max_retries=2, retry_backoff=0)
+    ps._session = Mock()
+    limited = _resp(429, {})
+    limited.headers["Retry-After"] = "0"
+    ok = _resp(200, {"prices": [{"price": 100, "amount": 1}]})
+    ps._session.get = Mock(side_effect=[limited, ok])
+    sleeps = []
+    monkeypatch.setattr("services.price.time.sleep", lambda delay: sleeps.append(delay))
+
+    result = ps.get_history("x")
+
+    assert len(result) == 1
+    assert ps._session.get.call_count == 2
+    assert sleeps == [0.0]
+
+
+def test_429_raises_after_retries(make_price_service, monkeypatch):
+    ps = make_price_service(max_retries=2, retry_backoff=0)
+    ps._session = Mock()
+    limited = _resp(429, {})
+    limited.headers["Retry-After"] = "0"
+    ps._session.get = Mock(return_value=limited)
+    monkeypatch.setattr("services.price.time.sleep", lambda delay: None)
+
+    with pytest.raises(ApiRateLimitError, match="429"):
+        ps.get_history("x")
+
+    assert ps._session.get.call_count == 2
 
 
 def test_get_history_parses_response(make_price_service):
