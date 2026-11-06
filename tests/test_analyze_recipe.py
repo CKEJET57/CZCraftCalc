@@ -140,6 +140,7 @@ def test_analyze_recipe_excluded(fake_price_service, make_index):
 #  Рекурсивный крафт
 # ────────────────────────────────────────────────────────────
 def test_analyze_recipe_with_craft_calc(make_calc, make_index):
+    
     recipe_a = _recipe(ingredients=[{"item": "b", "amount": 1}])
     recipe_b = _recipe(result="b", ingredients=[{"item": "c", "amount": 1}])
 
