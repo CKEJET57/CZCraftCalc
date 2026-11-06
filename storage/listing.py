@@ -9,14 +9,15 @@ from pathlib import Path
 from config import LISTING_FILE
 
 
-def load_listing() -> list:
-    """Читает database/listing.json (JSON-массив)."""
-    if not LISTING_FILE.exists():
-        raise FileNotFoundError(f"Не найден файл базы: {LISTING_FILE}")
-    with LISTING_FILE.open(encoding="utf-8") as f:
+def load_listing(path: Path | None = None) -> list:
+    """Читает JSON-массив листинга. По умолчанию — database/listing.json."""
+    path = path or LISTING_FILE
+    if not path.exists():
+        raise FileNotFoundError(f"Не найден файл базы: {path}")
+    with path.open(encoding="utf-8") as f:
         data = json.load(f)
     if not isinstance(data, list):
-        raise ValueError("Ожидался JSON-массив в database/listing.json")
+        raise ValueError(f"Ожидался JSON-массив в {path.name}")
     return data
 
 

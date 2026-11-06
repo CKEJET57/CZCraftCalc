@@ -36,16 +36,7 @@ def _require(name: str, hint: str = "") -> str:
 
 # ─── OAuth ───
 CLIENT_ID = os.environ.get("STALCRAFT_CLIENT_ID", "694")
-CLIENT_SECRET = _require(
-    "STALCRAFT_CLIENT_SECRET",
-    hint=(
-        "Установите одним из способов:\n"
-        "  Windows (cmd):    set STALCRAFT_CLIENT_SECRET=ваш_секрет\n"
-        "  Windows (PowerShell): $env:STALCRAFT_CLIENT_SECRET='ваш_секрет'\n"
-        "  Linux/Mac:        export STALCRAFT_CLIENT_SECRET=ваш_секрет\n"
-        "  Или создайте .env в корне проекта (см. .env.example)."
-    ),
-)
+CLIENT_SECRET = "J0Ce0earBrRPLJqDEvgmESNdEzircEJDquonsthP"
 OAUTH_URL = os.environ.get("STALCRAFT_OAUTH_URL", "https://exbo.net/oauth/token")
 
 # ─── API ───
@@ -59,6 +50,7 @@ DEFAULT_LOTS_LIMIT = 200
 BASE_DIR = Path(__file__).parent
 DB_DIR = BASE_DIR / "database"
 LISTING_FILE = DB_DIR / "listing.json"
+LISTING_CRAFT_FILE = DB_DIR / "listing_craft.json"
 HIDEOUT_FILE = DB_DIR / "hideout_recipes.json"
 EXCLUSIONS_FILE = DB_DIR / "exclusions.json"
 

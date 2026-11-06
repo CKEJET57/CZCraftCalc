@@ -120,7 +120,7 @@ def main() -> int:
     p.add_argument("--auto", action="store_true",
                    help="Все itemId, для которых уже есть история")
     p.add_argument("--all-listing", action="store_true",
-                   help="Все itemId из database/listing.json")
+                   help="Все itemId из database/listing_craft.json")
     p.add_argument("--every", type=int, default=None,
                    help="Режим демона: интервал в секундах")
     p.add_argument("--limit", type=int, default=200,
@@ -140,11 +140,12 @@ def main() -> int:
     if args.auto:
         items.extend(tracked_items())
     if args.all_listing:
+        from config import LISTING_CRAFT_FILE
         from storage.listing import load_listing, extract_item_id
-        listing = load_listing()
+        listing = load_listing(LISTING_CRAFT_FILE)
         items.extend(
             iid for iid in (extract_item_id(x) for x in listing) if iid
-        )
+            )
     items = list(dict.fromkeys(items))   # дедуп, с сохранением порядка
 
     if not items:
