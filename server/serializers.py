@@ -79,10 +79,18 @@ def _serialize_analysis(a: RecipeAnalysis, item_index: dict, lang: str) -> dict:
         "partial": a.partial,
         "excluded_summary": a.excluded_summary,
         "required_total": {
-            k: {"amount": v[0], "source": v[1]} for k, v in a.required_total.items()
+            k: {
+                "amount": v[0], 
+                "source": v[1],
+                "name": get_item_name(item_index, k, lang)
+            } for k, v in a.required_total.items()
         },
         "full_tree": {
-            k: {"amount": v[0], "source": v[1]} for k, v in a.full_tree.items()
+            k: {
+                "amount": v[0], 
+                "source": v[1],
+                "name": get_item_name(item_index, k, lang)
+            } for k, v in a.full_tree.items()
         },
     }
 

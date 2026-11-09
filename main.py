@@ -14,9 +14,6 @@ from core.context import build_context
 from core.options import AnalysisOptions
 from core.runner import run_batch, run_character, run_history, run_recipe
 from api.errors import ApiAuthError, ApiRateLimitError
-from storage.exclusions import (
-    add_exclusions, clear_exclusions, load_exclusions, remove_exclusions,
-)
 from storage.hideout import filter_recipes
 from storage.listing import build_item_index, get_item_name, load_listing
 
@@ -36,34 +33,6 @@ def cmd_help(args) -> int:
 def cmd_menu(args) -> int:
     from cli.menu import run_menu
     return run_menu()
-
-
-def cmd_exclusions(args) -> int:
-    action = getattr(args, "action", None)
-    if action == "list":
-        items = load_exclusions()
-        if not items:
-            print("Исключений нет.")
-            return 0
-        item_index = build_item_index(load_listing())
-        print(f"Исключено предметов: {len(items)} "
-              f"(database/exclusions.json)")
-        for iid in sorted(items):
-            print(f"  {iid:8s} {get_item_name(item_index, iid)}")
-        return 0
-    if action == "add":
-        items = add_exclusions(set(args.items))
-        print(f"Добавлено. Всего исключений: {len(items)}")
-        return 0
-    if action == "remove":
-        items = remove_exclusions(set(args.items))
-        print(f"Удалено. Всего исключений: {len(items)}")
-        return 0
-    if action == "clear":
-        clear_exclusions()
-        print("Список исключений очищен.")
-        return 0
-    return 1
 
 
 def cmd_character(args) -> int:
@@ -167,20 +136,6 @@ def main() -> int:
                         help="examples | prices | energy | fee | recursive | "
                              "troubleshoot | exclusions | menu | all")
     p_help.set_defaults(func=cmd_help)
-
-    p_excl = sub.add_parser("exclusions",
-                            help="Управление исключениями (нулевая стоимость)")
-    excl_sub = p_excl.add_subparsers(dest="action", required=True)
-    for name, help_text in [
-        ("list", "Показать исключённые предметы"),
-        ("add", "Добавить предметы"),
-        ("remove", "Удалить предметы"),
-        ("clear", "Очистить все исключения"),
-    ]:
-        pp = excl_sub.add_parser(name, help=help_text)
-        if name in ("add", "remove"):
-            pp.add_argument("items", nargs="+", help="itemId")
-        pp.set_defaults(func=cmd_exclusions)
 
     p1 = sub.add_parser("recipe", help="Анализ рецептов по itemId")
     p1.add_argument("item_id")

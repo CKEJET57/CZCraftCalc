@@ -1,9 +1,6 @@
-"""Внутренние утилиты: конвертеры схем → AnalysisOptions."""
-from __future__ import annotations
-
+# server/routes/_helpers.py
 from core.options import AnalysisOptions
 from server.schemas import AnalysisReqBase
-
 
 def opts_from_req(req: AnalysisReqBase) -> AnalysisOptions:
     return AnalysisOptions(
@@ -15,8 +12,8 @@ def opts_from_req(req: AnalysisReqBase) -> AnalysisOptions:
         no_fallback=req.no_fallback,
         no_history=req.no_history,
         workers=req.workers,
-        no_heartbeat=True,   # в API heartbeat не нужен
-        verbose=False,       # не логируем HTTP в stderr
+        no_heartbeat=True,
+        verbose=False,
         ignore_missing=req.ignore_missing,
         exclude=",".join(req.exclude),
     )

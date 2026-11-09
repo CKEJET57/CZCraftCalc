@@ -16,9 +16,7 @@ from fastapi.responses import JSONResponse
 
 from api.errors import ApiAuthError, ApiRateLimitError
 from server.deps import get_state
-from server.routes import (
-    batch, characters, exclusions, history, meta, recipes,
-)
+from server.routes import batch, characters, history, meta, recipes
 
 log = logging.getLogger("stalcraft.api")
 
@@ -46,7 +44,6 @@ def create_app() -> FastAPI:
     app.include_router(batch.router, prefix="/api")
     app.include_router(history.router, prefix="/api")
     app.include_router(characters.router, prefix="/api")
-    app.include_router(exclusions.router, prefix="/api")
 
     @app.exception_handler(ApiAuthError)
     async def _auth_err(_req: Request, exc: ApiAuthError):

@@ -1,11 +1,6 @@
-"""
-core/options.py — единые настройки анализа.
-"""
-
+# core/options.py
 from dataclasses import dataclass
-
 from config import DEFAULT_REGION
-
 
 @dataclass
 class AnalysisOptions:

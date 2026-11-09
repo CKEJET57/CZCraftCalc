@@ -66,11 +66,10 @@ def _collect_full_tree(item_id: str, amount: int,
                        depth: int) -> None:
     """
     Принудительно разворачивает рецепт до базовых ресурсов
-    (игнорирует выбор resolve market vs craft).
-
-    Исключённые предметы пропускаются — они уже есть на складе.
     """
     if item_id in calc.exclusions:
+        prev, prev_src = out.get(item_id, (0, "excluded"))
+        out[item_id] = (prev + amount, "excluded")
         return
 
     is_leaf = (
@@ -397,7 +396,8 @@ def analyze_recipe(
             source = "excluded"
             prev, prev_src = required_total.get(ing["item"], (0, "excluded"))
             required_total[ing["item"]] = (prev + ing["amount"], prev_src)
-            # в full_tree исключённые не попадают
+            prev, prev_src = full_tree.get(ing["item"], (0, "excluded"))
+            full_tree[ing["item"]] = (prev + ing["amount"], "excluded")
         else:
             info = price_service.get(ing["item"])
             if info.unit_price is None:

@@ -1,16 +1,11 @@
-"""
-core/context.py — единый контекст анализа: данные + сервисы.
-"""
-
+# core/context.py
 from dataclasses import dataclass
 
 from api.auth import fetch_token
 from services.craft import CraftCalculator
 from services.price import PriceService, phase
-from storage.exclusions import load_exclusions
 from storage.hideout import load_hideout_recipes
 from storage.listing import build_item_index, load_listing
-
 
 @dataclass
 class AnalysisContext:
@@ -23,9 +18,7 @@ class AnalysisContext:
     def close(self) -> None:
         self.price_service.close()
 
-
 def build_context(opts) -> AnalysisContext:
-    """Собирает контекст: данные + токен + сервисы."""
     with phase("Загрузка listing + рецептов"):
         listing = load_listing()
         item_index = build_item_index(listing)
@@ -34,7 +27,8 @@ def build_context(opts) -> AnalysisContext:
     with phase("OAuth: получение токена"):
         token = fetch_token()["access_token"]
 
-    exclusions = load_exclusions()
+    # Берем исключения только из аргументов
+    exclusions = set()
     if opts.exclude:
         exclusions.update(
             x.strip() for x in opts.exclude.split(",") if x.strip()

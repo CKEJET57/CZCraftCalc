@@ -14,7 +14,6 @@ from config import LISTING_CRAFT_FILE
 from core.context import AnalysisContext
 from services.craft import CraftCalculator
 from services.price import PriceService
-from storage.exclusions import load_exclusions
 from storage.hideout import load_hideout_recipes
 from storage.listing import build_item_index, load_listing
 
@@ -95,11 +94,13 @@ class AppState:
             return svc
 
     def build_context(self, opts) -> AnalysisContext:
-        exclusions = load_exclusions()
+        # Берем исключения только из аргументов (opts.exclude)
+        exclusions = set()
         if opts.exclude:
             exclusions.update(
                 x.strip() for x in opts.exclude.split(",") if x.strip()
             )
+            
         price_service = self.get_price_service(
             opts.region, no_history=opts.no_history
         )

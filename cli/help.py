@@ -35,13 +35,11 @@ def print_operations() -> None:
     _p("                                   --page K (номер страницы, 0 — первая)")
     _p("  batch                     Пакетный анализ по фильтру (bench/category/perk)")
     _p("                            Пример: main.py batch --bench workbench --category ammunition")
-    _p("  exclusions <action>       Управление исключениями (нулевая стоимость)")
-    _p("                            list | add <id> | remove <id> | clear")
     _p("  character <name>          Публичный профиль персонажа по имени")
     _p("                            Пример: main.py character Ivan")
     _p("  help [topic]              Эта справка / справка по теме")
     _p("                            Темы: examples, prices, energy, fee, recursive,")
-    _p("                                  troubleshoot, exclusions, menu, all")
+    _p("                                  troubleshoot, menu, all")
 
     # ---------- общие флаги ----------
     _p("\n⚙️  ОБЩИЕ ФЛАГИ (для recipe и batch)")
@@ -85,7 +83,6 @@ def print_operations() -> None:
     _p("  main.py help fee            Про комиссию аукциона")
     _p("  main.py help recursive      Про рекурсивный крафт")
     _p("  main.py help troubleshoot   Что делать, если нет цен")
-    _p("  main.py help exclusions     Про исключения (нулевая стоимость)")
     _p("  main.py help menu           Про интерактивное меню")
     _p("  main.py help character      Про профиль персонажа")
     _p("  main.py help history        Про историю покупок")
@@ -104,7 +101,6 @@ TOPICS = {
     "fee": "Комиссия аукциона",
     "recursive": "Рекурсивный крафт",
     "troubleshoot": "Диагностика проблем",
-    "exclusions": "Исключения (нулевая стоимость)",
     "character": "Профиль персонажа",
     "history": "История покупок предмета",
     "menu": "Интерактивное меню",
@@ -147,14 +143,8 @@ def _topic_examples() -> None:
   Топ-5 медицинских рецептов по абсолютной прибыли:
     python main.py batch --bench laboratory_table --perk medicine --top 5 --recursive --sort profit
 
-  Исключить нафармленные ресурсы (нулевая стоимость):
+  Исключить нафармленные ресурсы (нулевая стоимость на время запуска):
     python main.py recipe wj2zp --recursive --exclude 7rp7,404p
-
-  Управление постоянными исключениями:
-    python main.py exclusions add 7rp7 404p
-    python main.py exclusions list
-    python main.py exclusions remove 7rp7
-    python main.py exclusions clear
 
   Только /lots (быстро, но менее точно):
     python main.py recipe wj2zp --recursive --no-history
@@ -225,7 +215,7 @@ def _topic_energy() -> None:
     energy_cost = None → total_cost = None
     Рецепт помечается «⚠️ нет цены на 401j», маржа не считается.
 
-  Если 401j в исключениях (--exclude 401j):
+  Если 401j в --exclude:
     energy_cost = 0 → энергия «бесплатна».
 
   В выводе видно:
@@ -273,7 +263,7 @@ def _topic_recursive() -> None:
   С --recursive:    для каждого ингредиента выбирается min(рынок, крафт).
 
   Алгоритм (CraftCalculator.resolve):
-    1) если item в исключениях → cost=0, source="excluded", выход
+    1) если item в --exclude → cost=0, source="excluded", выход
     2) market_cost = цена_рынка × amount
     3) craft_cost  = лучший рецепт из всех с result=item:
        - runs = ceil(amount / recipe.result.amount)
@@ -309,7 +299,7 @@ def _topic_troubleshoot() -> None:
       1) main.py recipe <itemId> --recursive --explain-tree
          → покажет, какие базовые itemId без цены
       2) если это фармящееся сырьё (не торгуется) — используй --ignore-missing
-         для нижней оценки прибыли или exclusions add <id> (если у вас есть)
+         для нижней оценки прибыли или флаг --exclude <id> (нулевая стоимость)
       3) если это обычный предмет — попробуй --no-history (иногда /lots богаче)
 
   ▸ Долго висит / кажется, что зависло
@@ -337,67 +327,6 @@ def _topic_troubleshoot() -> None:
     С --recursive каждый рецепт может обходить 50–100 itemId.
     Уменьши количество рецептов:
       --max-recipes 10
-
-  ▸ «Прибыль: — (—)» после exclusions add
-    Скорее всего исключённый предмет не участвует ни в одном рецепте —
-    или вы перепутали itemId. Проверь `main.py exclusions list`.
-""")
-    _p(HEADER)
-
-
-def _topic_exclusions() -> None:
-    _p(HEADER)
-    _p("  🎁 Исключения (нулевая стоимость)")
-    _p(HEADER)
-    _p("""
-  Если ингредиент у вас в запасе (нафармлен, лежит на складе) —
-  его можно "исключить": калькулятор будет считать его нулевой
-  стоимостью и не будет искать цену на аукционе или рецепт.
-
-  Хранение: database/exclusions.json (сохраняется между запусками)
-
-  Команды:
-    main.py exclusions list              — показать исключения
-    main.py exclusions add 7rp7 404p     — добавить (можно много)
-    main.py exclusions remove 7rp7       — удалить
-    main.py exclusions clear             — очистить всё
-
-  Разово (только этот запуск):
-    main.py recipe wj2zp --recursive --exclude 7rp7,404p
-
-  Найти itemId ингредиентов:
-    main.py recipe wj2zp --show-ids
-
-  Или через интерактивное меню:
-    main.py menu → 🎁 Управление исключениями
-
-  В выводе:
-    - исключённые ингредиенты помечаются [ноль];
-    - внизу блок:
-        🎁 Учтено как ноль (2 вид., 7 ед.):
-           Чеснок                × 6
-           Термическая смесь     × 1
-
-  Работает и без --recursive (исключения проверяются напрямую).
-  С --recursive исключённый ингредиент не ищется на аукционе
-  и не крафтится — сразу нулевая стоимость.
-
-  Вложенные исключения:
-    Если исключить промежуточный предмет (например, zz1o2),
-    то во всех рецептах, где он встречается глубоко в дереве,
-    он тоже будет нулевой.
-
-  Энергия:
-    --exclude 401j → energy_cost = 0, энергия «бесплатна».
-
-  Пример:
-    У вас 20 чеснока → добавьте 7rp7 в исключения →
-    себестоимость снизится на 20×560 = 11 200 ₽.
-
-  ⚠️  Осторожно:
-    Исключение не проверяет, действительно ли у вас есть предмет
-    в нужном количестве. Если нужно 100, а у вас 20 — калькулятор
-    посчитает все 100 нулевыми. Ведите учёт вручную.
 """)
     _p(HEADER)
 
@@ -428,14 +357,14 @@ def _topic_menu() -> None:
            - explain / explain-tree
            - no-history (быстрее)
            - комиссия / регион
-           - исключения для этого рецепта
            - запустить анализ
 
     2. 🏆 Топ по категориям
          per-category on/off, Top-N, recursive, no-history
-    3. 🎁 Управление исключениями
-         показать / добавить по id / удалить / очистить
-    4. 📖 Справка
+    3. 📖 Справка
+    4. 🧑 Профиль персонажа
+    5. 🧾 История покупок предмета
+    6. 🚪 Выход
 
   Уровень крафта:
     Для каждого рецепта берётся max(requirements.perks.values()).
@@ -451,11 +380,10 @@ def _topic_menu() -> None:
   Особенности:
     - кэш цен живёт между выборами (второй предмет того же
       поддерева считается мгновенно)
-    - при изменении exclusions или региона CraftCalculator
-      пересоздаётся автоматически
+    - при изменении региона CraftCalculator пересоздаётся автоматически
     - в меню heartbeat отключён (чтобы не мешать input())
 
-  Выход: выбор 5 в главном меню, 'q' или Ctrl+C.
+  Выход: выбор 6 в главном меню, 'q' или Ctrl+C.
 """)
     _p(HEADER)
 
@@ -468,7 +396,7 @@ def _topic_character() -> None:
     python main.py character <name> [--region RU]
 
   Меню:
-    главное меню → 5. Профиль персонажа → ввести ник
+    главное меню → 4. Профиль персонажа → ввести ник
 
   Что запрашивается:
     GET /{region}/character/by-name/{name}/profile
@@ -503,7 +431,7 @@ def _topic_history() -> None:
                                       [--sort newest] [--days 7] [--region RU]
 
       Меню:
-        главное меню → 6. История покупок → категория → предмет → опции
+        главное меню → 5. История покупок → категория → предмет → опции
 
       Что запрашивается:
         GET /{region}/auction/{itemId}/history?limit=200
@@ -542,7 +470,6 @@ _DISPATCH = {
     "fee": _topic_fee,
     "recursive": _topic_recursive,
     "troubleshoot": _topic_troubleshoot,
-    "exclusions": _topic_exclusions,
     "menu": _topic_menu,
     "character": _topic_character,
     "history": _topic_history,
