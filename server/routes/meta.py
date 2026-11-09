@@ -20,12 +20,15 @@ def health() -> dict:
 
 
 @router.get("/items")
-def list_items(lang: str = "ru", q: str | None = None) -> list[dict]:
+def list_items(lang: str = "ru", 
+               q: str | None = None, 
+               craftable: bool = False) -> list[dict]:
     state = get_state()
+    index = state.craftable_index if craftable else state.item_index
     q_low = q.lower() if q else None
     out = []
-    for item_id in state.item_index:
-        name = get_item_name(state.item_index, item_id, lang)
+    for item_id in index:
+        name = get_item_name(index, item_id, lang)
         if q_low and q_low not in name.lower():
             continue
         out.append({"item_id": item_id, "name": name})

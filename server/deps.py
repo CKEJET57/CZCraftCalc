@@ -10,6 +10,7 @@ import threading
 import time
 
 from api.auth import fetch_token
+from config import LISTING_CRAFT_FILE
 from core.context import AnalysisContext
 from services.craft import CraftCalculator
 from services.price import PriceService
@@ -22,6 +23,7 @@ class AppState:
     def __init__(self) -> None:
         self._lock = threading.RLock()
         self._item_index: dict | None = None
+        self._craftable_index: dict | None = None
         self._hideout: dict | None = None
         self._token: str | None = None
         self._token_expires_at: float = 0.0
@@ -31,6 +33,13 @@ class AppState:
         if self._item_index is None:
             listing = load_listing()
             self._item_index = build_item_index(listing)
+            
+            try:
+                craft_listing = load_listing(LISTING_CRAFT_FILE)
+                self._craftable_index = build_item_index(craft_listing)
+            except Exception:
+                self._craftable_index = self._item_index
+
             self._hideout = load_hideout_recipes()
 
     @property
@@ -38,6 +47,12 @@ class AppState:
         self._ensure_data()
         assert self._item_index is not None
         return self._item_index
+
+    @property
+    def craftable_index(self) -> dict:
+        self._ensure_data()
+        assert self._craftable_index is not None
+        return self._craftable_index
 
     @property
     def hideout(self) -> dict:
