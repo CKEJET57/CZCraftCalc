@@ -19,4 +19,6 @@ def recipe(req: RecipeReq) -> dict:
     analyses = analyze_recipe_by_id(req.item_id, opts, ctx)
     if not analyses:
         raise HTTPException(404, f"Рецепт для item_id={req.item_id} не найден")
-    return {"item_id": req.item_id, "recipes": serialize_recipe_list(analyses)}
+    return {"item_id": req.item_id, 
+            "recipes": serialize_recipe_list(
+                analyses, ctx.item_index, opts.lang)}

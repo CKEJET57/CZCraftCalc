@@ -27,4 +27,4 @@ def batch(req: BatchReq) -> dict:
         max_recipes=req.max_recipes,
         sort=req.sort,
     )
-    return serialize_batch(result)
+    return serialize_batch(result, ctx.item_index, opts.lang)

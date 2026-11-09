@@ -1,14 +1,21 @@
 """Сериализация dataclass-результатов в JSON-совместимые dict."""
 from __future__ import annotations
+from storage.listing import get_item_name
 
 from core.analysis import BatchResult, HistoryResult
 from services.craft import CostResult, IngredientCost, RecipeAnalysis
 
 
-def _serialize_cost_result(cr: CostResult, max_depth: int = 5,
-                           current: int = 0) -> dict:
+def _serialize_cost_result(
+    cr: CostResult, 
+    item_index: dict, 
+    lang: str, 
+    max_depth: int = 5, 
+    current: int = 0
+) -> dict:
     d = {
         "item_id": cr.item_id,
+        "name": get_item_name(item_index, cr.item_id, lang),
         "amount": cr.amount,
         "cost": cr.cost,
         "source": cr.source,
@@ -24,7 +31,7 @@ def _serialize_cost_result(cr: CostResult, max_depth: int = 5,
     if cr.children:
         if current < max_depth:
             d["children"] = [
-                _serialize_cost_result(c, max_depth, current + 1)
+                _serialize_cost_result(c, item_index, lang, max_depth, current + 1) 
                 for c in cr.children
             ]
         else:
@@ -32,7 +39,7 @@ def _serialize_cost_result(cr: CostResult, max_depth: int = 5,
     return d
 
 
-def _serialize_ingredient(ing: IngredientCost) -> dict:
+def _serialize_ingredient(ing: IngredientCost, item_index: dict, lang: str) -> dict:
     return {
         "item_id": ing.item_id,
         "name": ing.name,
@@ -41,13 +48,13 @@ def _serialize_ingredient(ing: IngredientCost) -> dict:
         "total_price": ing.total_price,
         "source": ing.source,
         "craft_path": (
-            _serialize_cost_result(ing.craft_path)
+            _serialize_cost_result(ing.craft_path, item_index, lang)
             if ing.craft_path else None
         ),
     }
 
 
-def _serialize_analysis(a: RecipeAnalysis) -> dict:
+def _serialize_analysis(a: RecipeAnalysis, item_index: dict, lang: str) -> dict:
     return {
         "result_item_id": a.result_item_id,
         "result_name": a.result_name,
@@ -56,7 +63,7 @@ def _serialize_analysis(a: RecipeAnalysis) -> dict:
         "subcategory": a.subcategory_ru,
         "bench": a.recipe.get("bench"),
         "requirements": a.recipe.get("requirements", {}),
-        "ingredients": [_serialize_ingredient(i) for i in a.ingredients],
+        "ingredients": [_serialize_ingredient(i, item_index, lang) for i in a.ingredients],
         "ingredients_cost": a.ingredients_cost,
         "energy": a.energy,
         "energy_cost": a.energy_cost,
@@ -72,21 +79,19 @@ def _serialize_analysis(a: RecipeAnalysis) -> dict:
         "partial": a.partial,
         "excluded_summary": a.excluded_summary,
         "required_total": {
-            k: {"amount": v[0], "source": v[1]}
-            for k, v in a.required_total.items()
+            k: {"amount": v[0], "source": v[1]} for k, v in a.required_total.items()
         },
         "full_tree": {
-            k: {"amount": v[0], "source": v[1]}
-            for k, v in a.full_tree.items()
+            k: {"amount": v[0], "source": v[1]} for k, v in a.full_tree.items()
         },
     }
 
 
-def serialize_recipe_list(analyses: list[RecipeAnalysis]) -> list[dict]:
-    return [_serialize_analysis(a) for a in analyses]
+def serialize_recipe_list(analyses: list[RecipeAnalysis], item_index: dict, lang: str) -> list[dict]:
+    return [_serialize_analysis(a, item_index, lang) for a in analyses]
 
 
-def serialize_batch(result: BatchResult) -> dict:
+def serialize_batch(result: BatchResult, item_index: dict, lang: str) -> dict:
     return {
         "total_analyzed": result.total_analyzed,
         "with_full_price": result.with_full_price,
@@ -98,7 +103,7 @@ def serialize_batch(result: BatchResult) -> dict:
             {
                 "category_id": sec.category_id,
                 "category_name": sec.category_name,
-                "items": [_serialize_analysis(a) for a in sec.items],
+                "items": [_serialize_analysis(a, item_index, lang) for a in sec.items],
             }
             for sec in result.sections
         ],
