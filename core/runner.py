@@ -9,6 +9,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from config import ENERGY_ITEM_ID, EXCLUDED_TOP_CATEGORIES, LOCAL_TIMEZONE
+from core.analysis import analyze_recipe_by_id, analyze_batch
 from core.display import (
     fmt_pct, fmt_price, print_analysis, print_stats,
 )
@@ -125,94 +126,37 @@ def run_batch(opts, ctx, recipes: list[dict], *,
               top: int | None = None,
               max_recipes: int | None = None,
               sort: str = "margin") -> None:
-    """
-    Пакетный анализ ПРЕДВАРИТЕЛЬНО отфильтрованного списка рецептов.
-    Категории из EXCLUDED_TOP_CATEGORIES исключаются ВСЕГДА
-    (и в per_category, и в общем топе).
-    """
     if not recipes:
         print("Нет рецептов для анализа.")
         return
 
-    # ─── фильтр неинтересных категорий (работает в обоих режимах) ───
-    recipes = [
-        r for r in recipes
-        if (extract_category_id(r) or "other") not in EXCLUDED_TOP_CATEGORIES
-    ]
-    if not recipes:
-        print("После фильтра не осталось рецептов.")
-        return
-
-    groups, cat_names, order = _group_recipes(recipes, opts.lang)
-
-    # ─── лимиты ───
-    if per_category:
-        limit = max_recipes or 0
-        if limit > 0:
-            for cid in order:
-                groups[cid] = groups[cid][:limit]
-    else:
-        limit = max_recipes if max_recipes is not None else 30
-        if limit > 0 and len(recipes) > limit:
-            print(f"⚠️  Ограничиваю до {limit} рецептов (--max-recipes), "
-                  f"по всем категориям поровну.")
-            flat = _round_robin(groups, order, limit)
-            groups, cat_names, order = _group_recipes(flat, opts.lang)
-
-    all_recipes = [r for cid in order for r in groups[cid]]
-
-    if per_category:
-        print(f"Категорий: {len(order)}, рецептов: {len(all_recipes)}")
-    else:
-        print(f"Найдено рецептов: {len(all_recipes)}")
-    if ctx.exclusions:
-        print(f"Исключений: {len(ctx.exclusions)}")
-
-    _prefetch(ctx, all_recipes, opts)
-
-    print(f"\n▶ Анализ {len(all_recipes)} рецептов"
+    print(f"\n▶ Анализ {len(recipes)} рецептов"
           f"{' [recursive]' if opts.recursive else ''}")
+
     t0 = time.time()
-    analyses = []
-    for i, r in enumerate(all_recipes, 1):
-        name = get_item_name(ctx.item_index, r["result"][0]["item"], opts.lang)
-        sys.stdout.write(f"\r   [{i:3d}/{len(all_recipes):3d}] "
-                         f"{name[:36]:36s} ({time.time()-t0:5.1f}s)")
-        sys.stdout.flush()
-        analyses.append(analyze_recipe(
-            r, ctx.item_index, ctx.price_service,
-            fee_pct=opts.fee, craft_calc=ctx.craft_calc, lang=opts.lang,
-            ignore_missing=opts.ignore_missing,
-            exclusions=ctx.exclusions,
-        ))
+    result = analyze_batch(
+        opts, ctx, recipes,
+        per_category=per_category, top=top,
+        max_recipes=max_recipes, sort=sort,
+    )
     print(f"\r   ✓ готово за {time.time()-t0:.1f}s" + " " * 40)
 
-    top_n = top if top is not None else (5 if per_category else 10)
-    sort_key = ((lambda x: x.margin_pct) if sort == "margin"
-                else (lambda x: x.profit))
-    sort_label = _sort_label(sort)
-
-    if per_category:
-        for cid in order:
-            cat = [a for a in analyses
-                   if (extract_category_id(a.recipe) or "other") == cid]
-            full = [a for a in cat if a.margin_pct is not None]
-            full.sort(key=sort_key, reverse=True)
+    if result.per_category:
+        for sec in result.sections:
             print(f"\n{'═' * 66}")
-            print(f"  🏆 {cat_names[cid]} — топ-{top_n} по {sort_label}")
+            print(f"  🏆 {sec.category_name} — топ-{result.top_n} по "
+                  f"{_sort_label(result.sort)}")
             print(f"{'─' * 66}")
-            if not full:
+            if not sec.items:
                 print("  нет рецептов с полными ценами")
                 continue
-            for i, a in enumerate(full[:top_n], 1):
+            for i, a in enumerate(sec.items, 1):
                 _print_top_line(i, a)
     else:
-        full = [a for a in analyses if a.margin_pct is not None]
-        partial = [a for a in analyses if a.margin_pct is None]
-        print(f"\nС полными ценами: {len(full)}, без данных: {len(partial)}")
-        full.sort(key=sort_key, reverse=True)
-        print(f"\n🏆 ТОП-{top_n} по {sort_label}:")
-        for a in full[:top_n]:
+        print(f"\nС полными ценами: {result.with_full_price}, "
+              f"без данных: {result.without_data}")
+        print(f"\n🏆 ТОП-{result.top_n} по {_sort_label(result.sort)}:")
+        for a in result.sections[0].items:
             print(f"  {fmt_pct(a.margin_pct):>8s}  {a.result_name:36s} "
                   f"прибыль {fmt_price(a.profit):>12s}, "
                   f"себест. {fmt_price(a.total_cost):>12s}")

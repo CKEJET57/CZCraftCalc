@@ -10,6 +10,17 @@ services:
     tty: true
     command: []      # = menu
 
+  web:
+    build: .
+    image: stalcraft-calc:latest
+    env_file: .env
+    volumes:
+      - ./database:/app/database
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    entrypoint: ["uvicorn", "server.app:app", "--host", "0.0.0.0", "--port", "8000"]
+
   # Демон сбора истории (если нужен)
   collector:
     build: .
