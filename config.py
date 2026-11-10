@@ -52,7 +52,6 @@ DB_DIR = BASE_DIR / "database"
 LISTING_FILE = DB_DIR / "listing.json"
 LISTING_CRAFT_FILE = DB_DIR / "listing_craft.json"
 HIDEOUT_FILE = DB_DIR / "hideout_recipes.json"
-EXCLUSIONS_FILE = DB_DIR / "exclusions.json"
 
 # ─── официальная база данных ───
 DB_BASE_URL = "https://raw.githubusercontent.com/EXBO-Studio/stalzone-database/main/ru"
