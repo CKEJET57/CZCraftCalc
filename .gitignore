@@ -29,7 +29,13 @@ env/
 
 # ─── Данные приложения ───
 database/history/
-database/exclusions.json
+database/icons/
+database/items/
+database/achievements.json
+database/barter_recipes.json
+database/hideout_recipes.json
+database/listing.json
+database/stats.json
 *.log
 
 # ─── OS ───

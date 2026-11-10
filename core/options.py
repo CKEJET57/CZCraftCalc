@@ -1,4 +1,6 @@
-# core/options.py
+"""
+core/options.py — единые настройки анализа.
+"""
 from dataclasses import dataclass
 from config import DEFAULT_REGION
 
@@ -20,6 +22,7 @@ class AnalysisOptions:
     ignore_missing: bool = False
     exclude: str = ""
     show_ids: bool = False
+    use_local_data: bool = False  # <-- НОВОЕ ПОЛЕ
 
     @classmethod
     def from_args(cls, args) -> "AnalysisOptions":
@@ -32,6 +35,7 @@ class AnalysisOptions:
             explain=args.explain, explain_tree=args.explain_tree,
             ignore_missing=args.ignore_missing, exclude=args.exclude,
             show_ids=args.show_ids,
+            use_local_data=False, # В CLI по умолчанию выключено
         )
 
     @classmethod
@@ -41,4 +45,5 @@ class AnalysisOptions:
             no_history=True,
             no_heartbeat=True,
             max_requests=2000,
+            use_local_data=False,
         )

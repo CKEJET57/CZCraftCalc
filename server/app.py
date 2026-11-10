@@ -17,11 +17,14 @@ from fastapi.responses import JSONResponse
 from api.errors import ApiAuthError, ApiRateLimitError
 from server.deps import get_state
 from server.routes import batch, characters, history, meta, recipes
+from storage.downloader import ensure_database_files
 
 log = logging.getLogger("stalcraft.api")
 
 
 def create_app() -> FastAPI:
+    ensure_database_files()
+
     app = FastAPI(
         title="Stalcraft Crafting Calculator API",
         version="1.0.0",

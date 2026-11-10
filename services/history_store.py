@@ -16,6 +16,7 @@ import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+import statistics
 
 from config import DB_DIR
 
@@ -270,3 +271,33 @@ def trim_old(item_id: str, days: int = 30) -> tuple[int, int]:
         path.write_text("\n".join(kept) + ("\n" if kept else ""), encoding="utf-8")
 
     return d_removed, s_removed
+
+def get_local_price_from_deals(item_id: str, limit: int = 200) -> tuple[float | None, int]:
+    #Считает медиану из последних N локальных сделок.
+    deals = load_deals(item_id)
+    if not deals:
+        return None, 0
+    
+    # Берем последние по времени (предполагаем, что они дописываются в конец)
+    recent = deals[-limit:]
+    units = sorted(d["unit"] for d in recent if d.get("unit", 0) > 0)
+    
+    if len(units) < 5:  # min_samples
+        return None, len(units)
+        
+    trim = int(len(units) * 0.1)
+    core = units[trim: len(units) - trim] if trim else units
+    return statistics.median(core), len(core)
+
+def get_local_price_from_snapshots(item_id: str) -> tuple[float | None, int]:
+    #Берет минимальную цену из самого свежего локального снапшота.
+    snapshots = load_snapshots(item_id)
+    if not snapshots:
+        return None, 0
+    
+    last_snap = snapshots[-1]
+    summary = last_snap.get("summary", {})
+    min_unit = summary.get("min_unit")
+    n_lots = summary.get("n_lots", 0)
+    
+    return (float(min_unit) if min_unit else None), n_lots

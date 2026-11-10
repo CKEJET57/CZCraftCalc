@@ -54,6 +54,25 @@ LISTING_CRAFT_FILE = DB_DIR / "listing_craft.json"
 HIDEOUT_FILE = DB_DIR / "hideout_recipes.json"
 EXCLUSIONS_FILE = DB_DIR / "exclusions.json"
 
+# ─── официальная база данных ───
+DB_BASE_URL = "https://raw.githubusercontent.com/EXBO-Studio/stalzone-database/main/ru"
+
+# Файлы, которые нужно скачать, если их нет
+DB_REQUIRED_FILES = [
+    "achievements.json",
+    "barter_recipes.json",
+    "hideout_recipes.json",
+    "listing.json",
+    "stats.json"
+]
+
+# Папки, которые нужно создать, если их нет 
+# (внутренности не проверяем, как вы и просили)
+DB_REQUIRED_DIRS = [
+    "icons",
+    "items"
+]
+
 # ─── энергия (через покупку "Батарей холодного синтеза") ───
 ENERGY_ITEM_ID = "401j"
 ENERGY_PER_ITEM = 5000.0

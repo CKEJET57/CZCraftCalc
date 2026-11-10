@@ -16,7 +16,7 @@ class AnalysisReqBase(BaseModel):
     workers: int = 4
     ignore_missing: bool = False
     exclude: list[str] = Field(default_factory=list)
-
+    use_local_data: bool = False
 
 class RecipeReq(AnalysisReqBase):
     item_id: str

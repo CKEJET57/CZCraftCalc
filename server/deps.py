@@ -1,8 +1,5 @@
 """
 server/deps.py — синглтон-состояние процесса API.
-
-Один PriceService на регион, один токен OAuth, ленивая загрузка
-item_index и hideout. Не разделяется между процессами (uvicorn --workers 1).
 """
 from __future__ import annotations
 
@@ -76,9 +73,9 @@ class AppState:
                 svc.close()
             self._price_services.clear()
 
-    def get_price_service(self, region: str, *,
-                          no_history: bool = False) -> PriceService:
-        key = f"{region}|{'lots' if no_history else 'history'}"
+    # ОБНОВЛЕННЫЙ МЕТОД
+    def get_price_service(self, region: str, *, no_history: bool = False, use_local: bool = False) -> PriceService:
+        key = f"{region}|{'lots' if no_history else 'history'}|{'local' if use_local else 'online'}"
         with self._lock:
             svc = self._price_services.get(key)
             if svc is not None:
@@ -87,22 +84,26 @@ class AppState:
             svc = PriceService(
                 token, region=region,
                 use_history=not no_history,
-                max_requests=10_000_000,  # ограничение — rate, не total
-                heartbeat=False, verbose=False,
+                max_requests=10_000_000,
+                heartbeat=False, 
+                verbose=False,
+                use_local=use_local, # <-- ПЕРЕДАЕМ СЮДА
             )
             self._price_services[key] = svc
             return svc
 
     def build_context(self, opts) -> AnalysisContext:
-        # Берем исключения только из аргументов (opts.exclude)
         exclusions = set()
         if opts.exclude:
             exclusions.update(
                 x.strip() for x in opts.exclude.split(",") if x.strip()
             )
             
+        # Читаем флаг из opts безопасно
+        use_local = getattr(opts, 'use_local_data', False)
+        
         price_service = self.get_price_service(
-            opts.region, no_history=opts.no_history
+            opts.region, no_history=opts.no_history, use_local=use_local
         )
         craft_calc = None
         if opts.recursive:
@@ -126,7 +127,6 @@ class AppState:
 
 
 _state: AppState | None = None
-
 
 def get_state() -> AppState:
     global _state

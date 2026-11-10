@@ -14,6 +14,7 @@ from core.context import build_context
 from core.options import AnalysisOptions
 from core.runner import run_batch, run_character, run_history, run_recipe
 from api.errors import ApiAuthError, ApiRateLimitError
+from storage.downloader import ensure_database_files
 from storage.hideout import filter_recipes
 from storage.listing import build_item_index, get_item_name, load_listing
 
@@ -121,6 +122,9 @@ def add_analysis_args(p: argparse.ArgumentParser) -> None:
 
 
 def main() -> int:
+    # Проверяем наличие и скачиваем недостающие файлы базы данных
+    ensure_database_files()
+
     if len(sys.argv) == 1:
         from cli.menu import run_menu
         return run_menu()
@@ -134,7 +138,7 @@ def main() -> int:
     p_help = sub.add_parser("help", help="Справочник команд и тем")
     p_help.add_argument("topic", nargs="?", default=None,
                         help="examples | prices | energy | fee | recursive | "
-                             "troubleshoot | exclusions | menu | all")
+                             "troubleshoot | menu | all")
     p_help.set_defaults(func=cmd_help)
 
     p1 = sub.add_parser("recipe", help="Анализ рецептов по itemId")

@@ -16,4 +16,5 @@ def opts_from_req(req: AnalysisReqBase) -> AnalysisOptions:
         verbose=False,
         ignore_missing=req.ignore_missing,
         exclude=",".join(req.exclude),
+        use_local_data=req.use_local_data,
     )

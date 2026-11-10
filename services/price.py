@@ -28,6 +28,7 @@ import requests
 
 from api.errors import ApiAuthError, ApiRateLimitError
 from config import DEFAULT_REGION, EAPI_BASE
+from services.history_store import get_local_price_from_deals, get_local_price_from_snapshots
 
 
 @dataclass
@@ -54,6 +55,7 @@ class PriceService:
         heartbeat: bool = True,
         heartbeat_interval: float = 5.0,
         verbose: bool = False,
+        use_local: bool = False,
         max_retries: int = 3,
         retry_backoff: float = 1.0,
         max_retry_delay: float = 30.0,
@@ -92,6 +94,7 @@ class PriceService:
         self._hb_stop = threading.Event()
         if self.heartbeat_enabled:
             self._start_heartbeat()
+        self.use_local = use_local
 
     # ---------------- heartbeat ----------------
     def _start_heartbeat(self) -> None:
@@ -311,6 +314,20 @@ class PriceService:
 
         return last_response
     def _fetch(self, item_id: str) -> PriceInfo:
+        # Если включен локальный режим — читаем только файлы
+        if self.use_local:
+            if self.use_history:
+                median, samples = get_local_price_from_deals(item_id, self.history_limit)
+                if median is not None:
+                    return PriceInfo(item_id, median, "history", samples)
+
+            if self.fallback_to_lots:
+                min_lot, count = get_local_price_from_snapshots(item_id)
+                if min_lot is not None:
+                    return PriceInfo(item_id, min_lot, "lots", count)
+
+            return PriceInfo(item_id, None, "none", 0)
+        
         if self.use_history:
             median, samples = self._history_median(item_id)
             if median is not None:
