@@ -50,7 +50,7 @@ cd CZCraftCalc
 При необходимости переключитесь на нужную ветку:
 
 ~~~bash
-git switch feature/refactor
+git switch feature/web-api
 ~~~
 
 ### 2. Создать виртуальное окружение
@@ -425,8 +425,8 @@ STALCRAFT API принимает параметр limit не более 200 дл
 
 ~~~bash
 cd ~/CZCraftCalc
-git switch feature/refactor
-git pull --ff-only origin feature/refactor
+git switch feature/web-api
+git pull --ff-only origin feature/web-api
 sudo docker compose up -d --build collector
 ~~~
 
@@ -533,3 +533,28 @@ python -m pytest
 ---
 
 Данные аукциона и доступность API контролируются STALCRAFT/EXBO. Результаты расчёта являются оценкой по полученным рыночным данным и не гарантируют фактическую цену сделки.
+
+
+## Запуск веб-интерфейса в GitHub Codespaces
+
+В Codespace, открытом из этой ветки, клонируйте frontend в подкаталог `frontend`:
+
+```bash
+git clone -b main https://github.com/CKEJET57/CZWebInterfase.git frontend
+```
+
+Заполните `.env` (обязателен актуальный `STALCRAFT_CLIENT_SECRET`) и запустите API вместе с Vite:
+
+```bash
+bash scripts/codespace.sh up
+```
+
+Скрипт не запускает collector. Интерфейс откройте через forwarded port `5173` в панели Ports Codespaces.
+
+Остановка и диагностика:
+
+```bash
+bash scripts/codespace.sh status
+bash scripts/codespace.sh logs
+bash scripts/codespace.sh down
+```
