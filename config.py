@@ -36,7 +36,10 @@ def _require(name: str, hint: str = "") -> str:
 
 # ─── OAuth ───
 CLIENT_ID = os.environ.get("STALCRAFT_CLIENT_ID", "694")
-CLIENT_SECRET = "J0Ce0earBrRPLJqDEvgmESNdEzircEJDquonsthP"
+CLIENT_SECRET = _require(
+    "STALCRAFT_CLIENT_SECRET",
+    "Создайте .env на основе .env.example и укажите секрет OAuth-приложения.",
+)
 OAUTH_URL = os.environ.get("STALCRAFT_OAUTH_URL", "https://exbo.net/oauth/token")
 
 # ─── API ───
