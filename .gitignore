@@ -49,6 +49,9 @@ desktop.ini
 htmlcov/
 .tox/
 
+# ─── Локальные процессы Codespaces ───
+.run/
+
 # ─── Docker ───
 docker-compose.override.yml
 
