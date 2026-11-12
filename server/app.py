@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 
 from api.errors import ApiAuthError, ApiRateLimitError
 from server.deps import get_state
-from server.routes import batch, characters, history, meta, recipes
+from server.routes import analysis, batch, characters, history, meta, recipes
 from storage.downloader import ensure_database_files
 from config import DB_DIR
 
@@ -52,6 +52,7 @@ def create_app() -> FastAPI:
 
     app.include_router(meta.router, prefix="/api")
     app.include_router(recipes.router, prefix="/api")
+    app.include_router(analysis.router, prefix="/api")
     app.include_router(batch.router, prefix="/api")
     app.include_router(history.router, prefix="/api")
     app.include_router(characters.router, prefix="/api")
