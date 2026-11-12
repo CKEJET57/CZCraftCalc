@@ -9,3 +9,7 @@ venv/
 .idea/
 .vscode/
 *.log
+# Вложенный frontend в Codespaces не нужен backend image
+frontend/
+CZWebInterfase/
+.run/
