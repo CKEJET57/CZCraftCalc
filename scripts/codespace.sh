@@ -34,7 +34,7 @@ stop_group() {
   if is_running "$pid_file"; then
     local pid
     pid="$(cat "$pid_file")"
-    kill -TERM -- "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
+    kill -TERM "$pid" 2>/dev/null || true
   fi
   rm -f "$pid_file"
 }
@@ -69,11 +69,6 @@ start() {
     echo "Для проверки запуска нужен curl."
     exit 1
   fi
-  if ! command -v setsid >/dev/null 2>&1; then
-    echo "Для управления фоновыми процессами нужна команда setsid."
-    exit 1
-  fi
-
   if [[ ! -x "$VENV/bin/python" ]]; then
     python3 -m venv "$VENV"
   fi
@@ -85,7 +80,7 @@ start() {
       echo "API PID записан, но health endpoint не отвечает. Проверьте .run/api.log."
       exit 1
     fi
-    setsid "$VENV/bin/python" "$ROOT/server.py" >"$RUN_DIR/api.log" 2>&1 < /dev/null &
+    nohup "$VENV/bin/python" "$ROOT/server.py" >"$RUN_DIR/api.log" 2>&1 < /dev/null &
     echo "$!" > "$API_PID"
     if ! wait_http http://127.0.0.1:8000/api/health "Backend API"; then
       tail -n 80 "$RUN_DIR/api.log" || true
@@ -104,7 +99,7 @@ start() {
       echo "Frontend PID записан, но порт 5173 не отвечает. Проверьте .run/frontend.log."
       exit 1
     fi
-    nohup setsid bash -c 'cd "$1" && exec env VITE_API_URL=/api npm run dev -- --host 0.0.0.0' _ "$FRONTEND_DIR" >"$RUN_DIR/frontend.log" 2>&1 < /dev/null &
+    nohup bash -c 'cd "$1" && exec env VITE_API_URL=/api npm run dev -- --host 0.0.0.0' _ "$FRONTEND_DIR" >"$RUN_DIR/frontend.log" 2>&1 < /dev/null &
     echo "$!" > "$WEB_PID"
     if ! wait_http http://127.0.0.1:5173/ "Frontend"; then
       tail -n 80 "$RUN_DIR/frontend.log" || true
