@@ -99,7 +99,8 @@ start() {
     echo "✓ Backend API уже запущен на порту 8000 — повторно не запускаю."
   fi
 
-  if [[ ! -d "$FRONTEND_DIR/node_modules" ]]; then
+  if [[ ! -d "$FRONTEND_DIR/node_modules" ||
+        "$FRONTEND_DIR/package-lock.json" -nt "$FRONTEND_DIR/node_modules/.package-lock.json" ]]; then
     (cd "$FRONTEND_DIR" && npm ci)
   fi
 
