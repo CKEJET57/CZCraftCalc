@@ -58,3 +58,6 @@ docker-compose.override.yml
 # ─── Прочее ───
 *.bak
 *.tmp
+# Вложенная копия frontend для GitHub Codespaces
+frontend/
+CZWebInterfase/
