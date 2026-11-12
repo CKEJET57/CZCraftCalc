@@ -6,6 +6,11 @@ ENV PYTHONUNBUFFERED=1 \
     LC_ALL=C.UTF-8 \
     TZ=Europe/Moscow
 
+# git требуется storage.downloader для загрузки справочников и каталогов при первом запуске.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 COPY requirements.txt .
