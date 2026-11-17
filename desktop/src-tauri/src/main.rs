@@ -94,6 +94,18 @@ async fn search_character(name: String, region: Option<String>) -> Result<Value,
 }
 
 #[tauri::command]
+async fn desktop_request(action: String, payload: Option<Value>) -> Result<Value, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        call_python_bridge(json!({
+            "action": action,
+            "payload": payload.unwrap_or_else(|| json!({}))
+        }))
+    })
+    .await
+    .map_err(|error| format!("Ошибка фоновой задачи: {error}"))?
+}
+
+#[tauri::command]
 async fn get_stats_metadata() -> Result<Value, String> {
     tauri::async_runtime::spawn_blocking(|| {
         call_python_bridge(json!({ "action": "stats_metadata" }))
@@ -106,7 +118,8 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             search_character,
-            get_stats_metadata
+            get_stats_metadata,
+            desktop_request
         ])
         .run(tauri::generate_context!())
         .expect("Не удалось запустить CZCraftCalc Desktop");
