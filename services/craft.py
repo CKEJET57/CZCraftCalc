@@ -35,6 +35,7 @@ class CostResult:
     children: list["CostResult"] = field(default_factory=list)
     ingredients_cost: float | None = None
     energy_cost: float | None = None
+    energy: float = 0.0             # сырое количество энергии для этого узла (для UI)
     market_cost: float | None = None
     craft_cost: float | None = None
     why: str = ""
@@ -96,6 +97,23 @@ def _collect_full_tree(item_id: str, amount: int,
                            path | {item_id}, depth + 1)
 
 
+# ---------- суммарная энергия по поддереву (только craft-узлы) ----------
+def _sum_craft_energy(node: "CostResult") -> tuple[float, float]:
+    """
+    Возвращает (сырая энергия, её стоимость) по всем узлам поддерева,
+    у которых source == 'craft'. Для market/excluded — нули.
+    """
+    if node.source != "craft":
+        return 0.0, 0.0
+    energy = node.energy or 0.0
+    cost = node.energy_cost or 0.0
+    for ch in node.children:
+        e, c = _sum_craft_energy(ch)
+        energy += e
+        cost += c
+    return energy, cost
+
+
 class CraftCalculator:
     """Выбирает лучшее: купить на рынке или скрафтить. Учитывает энергию и исключения."""
 
@@ -132,6 +150,20 @@ class CraftCalculator:
                 ingredients_cost=0.0, energy_cost=0.0,
                 why="исключён (нулевая стоимость)",
             )
+            # Дерево крафта нужно для UI (раскрытие треугольника),
+            # даже если предмет учтён как «склад» со стоимостью 0.
+            if (
+                item_id not in path
+                and depth < self.max_depth
+                and item_id in self.recipes_by_result
+            ):
+                craft_tree = self._try_craft(item_id, amount, path, depth)
+                if craft_tree is not None:
+                    result.children = craft_tree.children
+                    result.craft_recipe = craft_tree.craft_recipe
+                    result.craft_runs = craft_tree.craft_runs
+                    result.craft_yield = craft_tree.craft_yield
+                    result.energy = craft_tree.energy
             self._memo[(item_id, amount)] = result
             return result
 
@@ -160,6 +192,13 @@ class CraftCalculator:
                     market_cost=market_cost, craft_cost=craft_result.cost,
                     why=f"рынок {market_cost:.0f} ≤ крафт {craft_result.cost:.0f}",
                 )
+                # Сохраняем дерево крафта для UI: цена берётся с рынка,
+                # но пользователь должен иметь возможность раскрыть состав.
+                result.children = craft_result.children
+                result.craft_recipe = craft_result.craft_recipe
+                result.craft_runs = craft_result.craft_runs
+                result.craft_yield = craft_result.craft_yield
+                result.energy = craft_result.energy
             else:
                 craft_result.market_cost = market_cost
                 craft_result.craft_cost = craft_result.cost
@@ -237,6 +276,7 @@ class CraftCalculator:
                     craft_yield=runs * yld, children=children,
                     ingredients_cost=ingredients_sum,
                     energy_cost=energy_cost,
+                    energy=energy_total,
                 )
         return best
 
@@ -331,6 +371,11 @@ class RecipeAnalysis:
     full_tree: dict[str, tuple[int, str]]           # 🌳 (базовые, если всё крафтим)
     category_ru: str
     subcategory_ru: str
+    # Суммарная энергия по всему дереву: рецепт + все реально крафтящиеся
+    # ингредиенты (рекурсивно). Считается на бэке, чтобы UI не зависел
+    # от сериализации поля energy на вложенных craft_path.
+    total_energy: float = 0.0
+    total_energy_cost: float = 0.0
 
 
 # ---------- согласованное округление ----------
@@ -457,6 +502,16 @@ def analyze_recipe(
     else:
         energy_cost = 0.0
 
+    # Суммарная энергия по всему дереву: сам рецепт + все craft-ингредиенты
+    total_energy = energy
+    total_energy_cost = energy_cost or 0.0
+    if craft_calc is not None:
+        for ic in ingredients:
+            if ic.source == "craft" and ic.craft_path is not None:
+                e, c = _sum_craft_energy(ic.craft_path)
+                total_energy += e
+                total_energy_cost += c
+
     if ingredients_cost is not None and energy_cost is not None:
         total_cost = ingredients_cost + energy_cost
     else:
@@ -481,6 +536,8 @@ def analyze_recipe(
             required_total=required_total,
             full_tree=full_tree,
             category_ru=cat, subcategory_ru=subcat,
+            total_energy=total_energy,
+            total_energy_cost=total_energy_cost,
         )
 
     profit = revenue_net - total_cost
@@ -501,4 +558,6 @@ def analyze_recipe(
         required_total=required_total,
         full_tree=full_tree,
         category_ru=cat, subcategory_ru=subcat,
+        total_energy=total_energy,
+        total_energy_cost=total_energy_cost,
     )
