@@ -130,7 +130,10 @@ def dispatch(payload: dict[str, Any]) -> dict[str, Any]:
         "recipe", "batch", "history", "market_analysis",
     }:
         try:
-            return {"ok": True, "data": _desktop_api(str(action), payload)}
+            action_payload = payload.get("payload")
+            if not isinstance(action_payload, dict):
+                action_payload = payload
+            return {"ok": True, "data": _desktop_api(str(action), action_payload)}
         except Exception as exc:
             detail = getattr(exc, "detail", None)
             if detail is not None:
