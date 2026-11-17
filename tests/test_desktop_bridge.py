@@ -55,3 +55,24 @@ def test_character_search_uses_existing_api_functions(monkeypatch):
             "token_received": True,
         },
     }
+
+
+def test_dispatch_passes_nested_desktop_payload(monkeypatch):
+    monkeypatch.setattr(
+        bridge,
+        "_desktop_api",
+        lambda action, payload: {"action": action, "payload": payload},
+    )
+
+    result = bridge.dispatch({
+        "action": "items",
+        "payload": {"q": "Модекк", "craftable": True},
+    })
+
+    assert result == {
+        "ok": True,
+        "data": {
+            "action": "items",
+            "payload": {"q": "Модекк", "craftable": True},
+        },
+    }
