@@ -20,7 +20,7 @@ Frontend подключён как Git submodule из `CKEJET57/CZWebInterfase`,
 Из корня репозитория:
 
 ```powershell
-git submodule update --init --recursive
+git submodule update --init --remote --recursive
 ```
 
 Установить frontend-зависимости:
