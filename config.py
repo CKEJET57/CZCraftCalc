@@ -9,6 +9,7 @@ config.py — единственная точка чтения настроек 
 Секреты (CLIENT_SECRET) — только через env/.env.
 """
 
+
 import os
 from pathlib import Path
 
