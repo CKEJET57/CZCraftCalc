@@ -69,12 +69,75 @@ def _search_character(payload: dict[str, Any]) -> dict[str, Any]:
     return {"ok": True, "data": profile}
 
 
+def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
+    """Вызывает существующие обработчики FastAPI напрямую, без HTTP-сервера."""
+    from fastapi import HTTPException
+    from server.routes import analysis, batch, history, meta, recipes
+    from server.schemas import BatchReq, HistoryReq, RecipeReq
+
+    if action == "items":
+        return meta.list_items(
+            lang=str(payload.get("lang") or "ru"),
+            q=payload.get("q"),
+            craftable=bool(payload.get("craftable", False)),
+        )
+    if action == "categories":
+        return meta.list_categories(lang=str(payload.get("lang") or "ru"))
+    if action == "item_details":
+        result = meta.get_item_details(
+            str(payload.get("item_id") or ""), lang=str(payload.get("lang") or "ru")
+        )
+        icon_url = result.get("icon_url")
+        if icon_url and icon_url.startswith("/api/static/"):
+            import base64
+            from config import DB_DIR
+            relative = icon_url.removeprefix("/api/static/")
+            icon_path = (DB_DIR / relative).resolve()
+            if icon_path.is_file() and icon_path.is_relative_to(DB_DIR.resolve()):
+                suffix = icon_path.suffix.lower()
+                mime = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp"}.get(suffix, "application/octet-stream")
+                result["icon_url"] = f"data:{mime};base64," + base64.b64encode(icon_path.read_bytes()).decode("ascii")
+            else:
+                result["icon_url"] = None
+        return result
+    if action == "item_variants":
+        return meta.get_item_variants(
+            str(payload.get("item_id") or ""), lang=str(payload.get("lang") or "ru")
+        )
+    if action == "recipe":
+        return recipes.recipe(RecipeReq(**payload))
+    if action == "batch":
+        return batch.batch(BatchReq(**payload))
+    if action == "history":
+        return history.history(HistoryReq(**payload))
+    if action == "market_analysis":
+        return analysis.market_analysis(
+            str(payload.get("item_id") or ""), days=int(payload.get("days") or 7)
+        )
+    if action == "health":
+        return meta.health()
+    raise ValueError(f"Неизвестная desktop-команда: {action}")
+
+
 def dispatch(payload: dict[str, Any]) -> dict[str, Any]:
     action = payload.get("action")
     if action == "stats_metadata":
         return _stats_metadata()
     if action == "search_character":
         return _search_character(payload)
+    if action in {
+        "health", "items", "categories", "item_details", "item_variants",
+        "recipe", "batch", "history", "market_analysis",
+    }:
+        try:
+            return {"ok": True, "data": _desktop_api(str(action), payload)}
+        except Exception as exc:
+            detail = getattr(exc, "detail", None)
+            if detail is not None:
+                message = str(detail)
+            else:
+                message = f"{type(exc).__name__}: {exc}"
+            return _error("backend_error", message)
     return _error("unknown_action", "Неизвестная команда desktop bridge.")
 
 
