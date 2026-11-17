@@ -86,13 +86,13 @@ def main() -> int:
         line = raw_line.decode("utf-8")
     except UnicodeDecodeError as exc:
         result = _error("invalid_encoding", f"Входной запрос должен быть в UTF-8: {exc}")
-        output = json.dumps(result, ensure_ascii=True, separators=(",", ":")) + "\\n"
+        output = json.dumps(result, ensure_ascii=True, separators=(",", ":")) + "\n"
         sys.stdout.buffer.write(output.encode("ascii"))
         sys.stdout.flush()
         return 0
     if not line:
         result = _error("empty_request", "Не получена команда.")
-        output = json.dumps(result, ensure_ascii=True, separators=(",", ":")) + "\\n"
+        output = json.dumps(result, ensure_ascii=True, separators=(",", ":")) + "\n"
         sys.stdout.buffer.write(output.encode("ascii"))
         return 0
 
@@ -111,7 +111,7 @@ def main() -> int:
         result = _error("backend_error", f"{type(exc).__name__}: {exc}")
 
     # ASCII JSON не зависит от кодовой страницы Windows; Rust восстановит Unicode.
-    output = json.dumps(result, ensure_ascii=True, separators=(",", ":")) + "\\n"
+    output = json.dumps(result, ensure_ascii=True, separators=(",", ":")) + "\n"
     sys.stdout.buffer.write(output.encode("ascii"))
     sys.stdout.flush()
     return 0
