@@ -79,9 +79,21 @@ def dispatch(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> int:
-    line = sys.stdin.readline()
+    # Tauri передаёт JSON в UTF-8. Читаем байты напрямую, чтобы системная
+    # кодировка консоли Windows не искажала кириллицу во входном запросе.
+    raw_line = sys.stdin.buffer.readline()
+    try:
+        line = raw_line.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        result = _error("invalid_encoding", f"Входной запрос должен быть в UTF-8: {exc}")
+        output = json.dumps(result, ensure_ascii=True, separators=(",", ":")) + "\\n"
+        sys.stdout.buffer.write(output.encode("ascii"))
+        sys.stdout.flush()
+        return 0
     if not line:
-        print(json.dumps(_error("empty_request", "Не получена команда."), ensure_ascii=False))
+        result = _error("empty_request", "Не получена команда.")
+        output = json.dumps(result, ensure_ascii=True, separators=(",", ":")) + "\\n"
+        sys.stdout.buffer.write(output.encode("ascii"))
         return 0
 
     try:
@@ -98,7 +110,9 @@ def main() -> int:
     except Exception as exc:
         result = _error("backend_error", f"{type(exc).__name__}: {exc}")
 
-    sys.stdout.write(json.dumps(result, ensure_ascii=False, separators=(",", ":")) + "\n")
+    # ASCII JSON не зависит от кодовой страницы Windows; Rust восстановит Unicode.
+    output = json.dumps(result, ensure_ascii=True, separators=(",", ":")) + "\\n"
+    sys.stdout.buffer.write(output.encode("ascii"))
     sys.stdout.flush()
     return 0
 
