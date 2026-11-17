@@ -70,7 +70,15 @@ def _search_character(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
-    """Вызывает существующие обработчики FastAPI напрямую, без HTTP-сервера."""
+    """Вызывает существующие обработчики FastAPI напрямую, без HTTP-сервера.
+
+    Перед обращением к справочникам выполняет ту же подготовку database,
+    что и обычный запуск backend через FastAPI/CLI.
+    """
+    from storage.downloader import ensure_database_files
+
+    ensure_database_files()
+
     from fastapi import HTTPException
     from server.routes import analysis, batch, history, meta, recipes
     from server.schemas import BatchReq, HistoryReq, RecipeReq
