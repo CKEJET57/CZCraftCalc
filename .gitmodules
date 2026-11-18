@@ -1,4 +1,0 @@
-[submodule "desktop/frontend"]
-	path = desktop/frontend
-	url = https://github.com/CKEJET57/CZWebInterfase.git
-	branch = feature/desktop-prototype

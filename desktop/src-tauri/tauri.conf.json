@@ -4,10 +4,10 @@
   "version": "0.1.0",
   "identifier": "com.czcraftcalc.desktop",
   "build": {
-    "beforeDevCommand": "npm run dev -- --host 127.0.0.1",
+    "beforeDevCommand": "cd ../frontend && npm run dev -- --host 127.0.0.1",
     "devUrl": "http://localhost:5173",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../frontend/dist"
+    "beforeBuildCommand": "cd ../frontend && npm run build",
+    "frontendDist": "../../frontend/dist"
   },
   "app": {
     "withGlobalTauri": true,

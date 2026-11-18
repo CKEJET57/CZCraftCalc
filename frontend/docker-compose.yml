@@ -1,0 +1,14 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+    image: stalcraft-web-interface:latest
+    container_name: stalcraft-web-interface
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
