@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage'
 import { BatchPage } from './pages/BatchPage'
 import { ItemPage } from './pages/ItemPage'
 import { CharacterPage } from './pages/CharacterPage'
+import { api } from './api/client'
 
 export default function App() {
   return (
@@ -13,7 +14,7 @@ export default function App() {
         <Route path="recipe" element={<Navigate to="/items" replace />} />
         <Route path="batch" element={<BatchPage />} />
         <Route path="items" element={<ItemPage />} />
-        <Route path="character" element={<CharacterPage />} />
+        <Route path="character" element={api.desktop ? <Navigate to="/" replace /> : <CharacterPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

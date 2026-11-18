@@ -9,6 +9,8 @@ const items = [
 ]
 
 export function Layout() {
+  const visibleItems = api.desktop ? items.filter(item => item.to !== '/character') : items
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <header className="border-b border-slate-800">
@@ -17,7 +19,7 @@ export function Layout() {
             🧪 STALCRAFT Crafting
           </Link>
           <nav className="flex flex-wrap gap-1 text-sm">
-            {items.map(n => (
+            {visibleItems.map(n => (
               <NavLink
                 key={n.to}
                 to={n.to}

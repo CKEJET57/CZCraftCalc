@@ -50,7 +50,7 @@ cd CZCraftCalc
 При необходимости переключитесь на нужную ветку:
 
 ~~~bash
-git switch feature/web-api
+git switch feature/monorepo
 ~~~
 
 ### 2. Создать виртуальное окружение
