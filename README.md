@@ -537,11 +537,7 @@ python -m pytest
 
 ## Запуск веб-интерфейса в GitHub Codespaces
 
-В Codespace, открытом из этой ветки, клонируйте frontend в подкаталог `frontend`:
-
-```bash
-git clone -b main https://github.com/CKEJET57/CZWebInterfase.git frontend
-```
+Frontend уже включён в этот репозиторий в каталоге `frontend/`; отдельно клонировать `CZWebInterfase` не требуется.
 
 Заполните `.env` (обязателен актуальный `STALCRAFT_CLIENT_SECRET`) и запустите API вместе с Vite:
 

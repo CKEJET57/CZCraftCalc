@@ -69,8 +69,7 @@ start() {
   fi
 
   if [[ ! -f "$FRONTEND_DIR/package.json" ]]; then
-    echo "Не найден frontend. Из корня CZCraftCalc выполните:"
-    echo "  git clone -b main https://github.com/CKEJET57/CZWebInterfase.git frontend"
+    echo "Не найден каталог frontend/. Проверьте, что вы используете полную версию монорепозитория."
     exit 1
   fi
   if ! command -v curl >/dev/null 2>&1; then
