@@ -259,7 +259,7 @@ def cleanup_queue(state: dict, now: datetime) -> int:
                 else:
                     removed += 1
             if keep:
-                atomic_write(path, "\\n".join(keep) + "\\n")
+                atomic_write(path, "\n".join(keep) + "\n")
             else:
                 path.unlink(missing_ok=True)
         except (OSError, json.JSONDecodeError):
