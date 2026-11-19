@@ -3,7 +3,11 @@ from __future__ import annotations
 
 import argparse
 import base64
-import fcntl
+try:
+    import fcntl
+except ImportError:  # Windows: модуль используется только при локальных тестах/запуске.
+    fcntl = None
+    import msvcrt
 import hashlib
 import json
 import os
@@ -148,6 +152,14 @@ def merge_hourly(existing: str, fresh: str) -> str:
             if not line.strip():
                 continue
             row = json.loads(line)
+            previous = by_hour.get(row["hour"])
+            if previous:
+                metric_keys = (
+                    "item", "deals", "amount", "turnover", "min_unit",
+                    "max_unit", "avg_unit", "median_unit", "source_records",
+                )
+                if all(previous.get(key) == row.get(key) for key in metric_keys):
+                    row["aggregated_at"] = previous.get("aggregated_at", row.get("aggregated_at"))
             by_hour[row["hour"]] = row
     return "".join(
         json.dumps(by_hour[key], ensure_ascii=False, separators=(",", ":")) + "\n"
@@ -307,10 +319,13 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true", help="Проверить чтение и агрегацию без GitHub")
     args = parser.parse_args()
     PUBLISH_DIR.mkdir(parents=True, exist_ok=True)
-    with LOCK_FILE.open("w", encoding="utf-8") as lock:
+    with LOCK_FILE.open("a", encoding="utf-8") as lock:
         try:
-            fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
+            if fcntl is not None:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            else:
+                msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
+        except (BlockingIOError, OSError):
             log("Публикация уже выполняется; второй запуск завершён")
             return 0
         try:
@@ -318,6 +333,12 @@ def main() -> int:
         except (PublishError, requests.RequestException, OSError) as exc:
             log(f"ОШИБКА публикации: {exc}")
             return 1
+        finally:
+            if fcntl is not None:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+            else:
+                lock.seek(0)
+                msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
 
 
 if __name__ == "__main__":
