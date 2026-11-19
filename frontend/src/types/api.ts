@@ -153,6 +153,16 @@ export interface HistoryResp {
 }
 
 // ─── Справочники ───
+export interface StatMeta {
+  id: string
+  category: string
+  type: string
+  name: {
+    lines?: { ru?: string; en?: string }
+    text?: string
+  }
+}
+
 export interface Item {
   item_id: string
   name: string
