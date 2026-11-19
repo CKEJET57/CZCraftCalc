@@ -141,3 +141,4 @@
 {"item":"lynkj","hour":"2026-11-19T08:00:00+03:00","deals":5,"amount":15,"turnover":12500.0,"min_unit":833.333333,"max_unit":833.333333,"avg_unit":833.333333,"median_unit":833.333333,"source_records":5,"aggregated_at":"2026-11-19T13:05:25.965129+00:00"}
 {"item":"lynkj","hour":"2026-11-19T09:00:00+03:00","deals":1,"amount":3,"turnover":2999.0,"min_unit":999.666667,"max_unit":999.666667,"avg_unit":999.666667,"median_unit":999.666667,"source_records":1,"aggregated_at":"2026-11-19T13:05:25.965129+00:00"}
 {"item":"lynkj","hour":"2026-11-19T20:00:00+03:00","deals":1,"amount":2,"turnover":1111.0,"min_unit":555.5,"max_unit":555.5,"avg_unit":555.5,"median_unit":555.5,"source_records":1,"aggregated_at":"2026-11-19T19:05:30.572557+00:00"}
+{"item":"lynkj","hour":"2026-11-20T00:00:00+03:00","deals":4,"amount":12,"turnover":12000.0,"min_unit":1000.0,"max_unit":1000.0,"avg_unit":1000.0,"median_unit":1000.0,"source_records":4,"aggregated_at":"2026-11-19T23:05:16.408362+00:00"}
