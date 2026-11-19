@@ -1,22 +1,43 @@
 # Публикация почасовых агрегатов сделок
 
-Публикатор — отдельный одноразовый процесс. Он читает `database/history/deals/*.jsonl`, не изменяет исходные файлы и не читает/не публикует `snapshots`.
+Публикатор — отдельный процесс, независимый от collector. Он читает только исходные сделки из `database/history/deals/*.jsonl`. Каталог snapshots не читается и не публикуется.
 
-## Формат
+## Структура Git
 
-Завершённые часы агрегируются в часовом поясе `STALCRAFT_TIMEZONE` (по умолчанию `Europe/Moscow`). Текущий незавершённый час не публикуется. Для каждого предмета формируется запись с полями:
+Ветка `market-data` повторяет расположение каталога исходных сделок. Для каждого предмета — один файл с тем же именем и расширением, которые использует collector:
 
-- `item`, `hour`, `schema_version`;
-- `deals` — число сделок;
-- `amount` — суммарное количество;
-- `turnover` — сумма полей `price` исходных сделок;
-- `min_unit`, `max_unit`, `avg_unit` — средневзвешенная цена (`turnover / amount`), `median_unit`.
+```text
+database/
+└── history/
+    └── deals/
+        ├── 401j.jsonl
+        ├── 510.jsonl
+        └── ...
+```
 
-Файлы в ветке `market-data`: `deals/YYYY/MM/DD/HH.jsonl`. Один файл содержит по одной агрегированной записи на предмет за час. Повторная публикация обновляет тот же путь, а не добавляет дубликаты.
+Формат контейнера — JSONL: одна JSON-запись на строку. В опубликованном файле каждая строка — агрегат одного предмета за один час. Имена, расширение и расположение файлов совпадают с исходным хранилищем. `snapshots/` в ветку публикации не попадает.
 
-## Переменные .env
+Поля агрегата: `item`, `hour`, `deals`, `amount`, `turnover`, `min_unit`, `max_unit`, `avg_unit`, `median_unit`, `source_records`, `aggregated_at`. Средняя цена взвешенная: сумма полных цен / суммарное количество. `hour` — начало часа в `Europe/Moscow`.
 
-Создайте fine-grained GitHub token с доступом **Contents: Read and write** только к `CKEJET57/CZCraftCalc`, затем задайте:
+## Расписание и ручной запуск
+
+Автоматический запуск — каждый час в `:05` по московскому времени. Например, в 14:05 публикуется завершённый интервал 13:00–14:00.
+
+Ручной запуск из корня проекта:
+
+```bash
+docker compose run --rm publisher
+```
+
+Предварительная проверка без GitHub:
+
+```bash
+docker compose run --rm publisher --dry-run
+```
+
+## GitHub token
+
+Создайте fine-grained token с правом **Contents: Read and write** только для репозитория `CKEJET57/CZCraftCalc`. Добавьте в локальный `.env`:
 
 ```dotenv
 GITHUB_TOKEN=github_pat_...
@@ -25,55 +46,17 @@ GITHUB_DATA_BRANCH=market-data
 GITHUB_BASE_BRANCH=feature/monorepo
 ```
 
-Токен не добавляйте в Git и не передавайте в командной строке. Публикатор создаёт `market-data` от `feature/monorepo`, если ветка ещё не существует.
+Не добавляйте токен в Git. Ветка `market-data` предназначена только для опубликованных данных.
 
-## Ручной запуск
+## Локальная очередь и сохранность
 
-Из корня проекта:
+- Исходные `database/history/deals/` и `database/history/snapshots/` публикатор не изменяет.
+- Локальная очередь находится в `database/publish/queue/deals/<itemId>.jsonl`.
+- Состояние публикации — `database/publish/state.json`.
+- Локальные агрегаты старше 30 дней удаляются только после подтверждённой публикации. Неотправленная очередь сохраняется и повторяется при следующем запуске, даже если срок хранения превысил 30 дней.
+- В Git опубликованные агрегаты сохраняются бессрочно.
+- Публикатор использует `time` сделки, не `collected_at`.
+- Одновременные запуски блокируются файловой блокировкой.
+- Сбой GitHub не останавливает collector и не продвигает состояние успешной публикации.
 
-```bash
-docker compose run --rm publisher
-```
-
-Предварительный просмотр без отправки в GitHub:
-
-```bash
-docker compose run --rm publisher --dry-run
-```
-
-## Автоматический запуск на Orange Pi
-
-Скопируйте unit-файлы в systemd, затем активируйте таймер:
-
-```bash
-sudo cp deployment/systemd/czcraftcalc-publisher.service /etc/systemd/system/
-sudo cp deployment/systemd/czcraftcalc-publisher.timer /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now czcraftcalc-publisher.timer
-systemctl list-timers czcraftcalc-publisher.timer
-```
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now czcraftcalc-publisher.timer
-systemctl list-timers czcraftcalc-publisher.timer
-```
-
-Таймер запускает публикацию каждый час в `:05` по `Europe/Moscow`. `Persistent=true` позволяет выполнить пропущенный запуск после включения устройства.
-
-Проверка последнего запуска:
-
-```bash
-sudo systemctl status czcraftcalc-publisher.service
-sudo journalctl -u czcraftcalc-publisher.service -n 100 --no-pager
-```
-
-## Локальное состояние и сохранность исходных данных
-
-- Исходные `database/history/deals/` и `database/history/snapshots/` публикатор не переписывает, не перемещает и не удаляет.
-- `database/publish/queue/` содержит локальные подготовленные агрегаты; успешно опубликованные файлы старше 30 дней удаляются.
-- `database/publish/state.json` хранит контрольные хеши публикаций, а не исходные сделки.
-- Если GitHub недоступен, очередь сохраняется и будет повторно отправлена при следующем запуске. Непубликованная очередь не удаляется автоматически, даже если ей больше 30 дней: это предотвращает потерю данных при длительном сбое. В таком случае она временно превышает обычный 30-дневный срок хранения.
-- Ветка Git хранит агрегаты бессрочно.
-
-Публикатор читает только сделки, использует время самой сделки `time`, а не `collected_at`. Ошибки публикации не останавливают контейнер collector.
+Важно: существующая очистка collector продолжает удалять исходные сделки старше 30 дней согласно его текущей настройке. Публикатор не меняет эту логику; если публикация не выполнялась почти 30 дней, очередь должна быть проверена по журналам, прежде чем исходные данные будут удалены collector.
