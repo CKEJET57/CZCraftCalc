@@ -29,7 +29,7 @@ class PublishDealsTests(unittest.TestCase):
         self.assertEqual(row["avg_unit"], 56)
         self.assertEqual(row["median_unit"], 55)
         self.assertIn('"item":"401j"', content)
-        self.assertTrue(content.endswith("\\n"))
+        self.assertTrue(content.endswith("\n"))
 
     def test_grouping_does_not_modify_source_jsonl(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -39,7 +39,7 @@ class PublishDealsTests(unittest.TestCase):
             original = json.dumps({
                 "item": "401j", "price": 100, "amount": 2, "unit": 50,
                 "time": "2026-11-19T10:15:00+00:00",
-            }) + "\\n"
+            }) + "\n"
             source.write_text(original, encoding="utf-8")
             now = datetime(2026, 11, 19, 15, 0, tzinfo=ZoneInfo("Europe/Moscow"))
             with patch.object(publisher, "HISTORY_DEALS_DIR", source_dir):
@@ -55,7 +55,7 @@ class PublishDealsTests(unittest.TestCase):
             source.write_text(json.dumps({
                 "item": "401j", "price": 100, "amount": 2, "unit": 50,
                 "time": "2026-11-19T12:15:00+00:00",
-            }) + "\\n", encoding="utf-8")
+            }) + "\n", encoding="utf-8")
             now = datetime(2026, 11, 19, 15, 0, tzinfo=ZoneInfo("Europe/Moscow"))
             with patch.object(publisher, "HISTORY_DEALS_DIR", source_dir):
                 grouped = publisher.read_source_deals(now, ZoneInfo("Europe/Moscow"))
@@ -64,7 +64,7 @@ class PublishDealsTests(unittest.TestCase):
     def test_merge_updates_hour_without_duplicates(self):
         old = json.dumps({"hour": "2026-11-19T10:00:00+03:00", "deals": 2})
         fresh = json.dumps({"hour": "2026-11-19T10:00:00+03:00", "deals": 3})
-        merged = publisher.merge_hourly(old + "\\n", fresh + "\\n")
+        merged = publisher.merge_hourly(old + "\n", fresh + "\n")
         rows = [json.loads(line) for line in merged.splitlines()]
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0]["deals"], 3)
