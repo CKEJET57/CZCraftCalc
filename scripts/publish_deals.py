@@ -223,28 +223,36 @@ class GitHubPublisher:
 
 
 def cleanup_queue(state: dict, now: datetime) -> int:
+    """Очищает только опубликованные строки агрегатов старше 30 дней."""
     cutoff = now.astimezone(timezone.utc) - timedelta(days=KEEP_DAYS)
     removed = 0
     if not QUEUE_DIR.exists():
         return removed
     for path in QUEUE_DIR.glob("*.jsonl"):
         try:
-            lines = path.read_text(encoding="utf-8").splitlines()
+            content = path.read_text(encoding="utf-8")
+            digest = hashlib.sha256(content.encode("utf-8")).hexdigest()
+            # Если локальный файл отличается от последней успешно опубликованной
+            # версии, не удаляем его: он может содержать ещё не отправленные данные.
+            if state.get("published", {}).get(path.stem) != digest:
+                continue
             keep = []
-            for line in lines:
+            for line in content.splitlines():
+                if not line.strip():
+                    continue
                 row = json.loads(line)
                 hour = parse_time(row.get("hour"))
-                if hour and (hour >= cutoff or row.get("hour") not in state["published"].get(path.stem, {})):
+                if hour is None or hour >= cutoff:
                     keep.append(line)
-                elif hour:
+                else:
                     removed += 1
-            atomic_write(path, "\n".join(keep) + ("\n" if keep else ""))
-            if not keep:
+            if keep:
+                atomic_write(path, "\\n".join(keep) + "\\n")
+            else:
                 path.unlink(missing_ok=True)
         except (OSError, json.JSONDecodeError):
             continue
     return removed
-
 
 def run(dry_run: bool = False) -> int:
     token = os.environ.get("GITHUB_TOKEN", "").strip()
