@@ -36,7 +36,7 @@ class PublishDealsTests(unittest.TestCase):
             original = json.dumps({
                 "item": "401j", "price": 100, "amount": 2, "unit": 50,
                 "time": "2026-11-19T10:15:00+00:00",
-            }) + "\\n"
+            }) + "\n"
             source.write_text(original, encoding="utf-8")
             now = datetime(2026, 11, 19, 15, 0, tzinfo=ZoneInfo("Europe/Moscow"))
             with patch.object(publisher, "HISTORY_DEALS_DIR", source_dir):
@@ -52,7 +52,7 @@ class PublishDealsTests(unittest.TestCase):
             source.write_text(json.dumps({
                 "item": "401j", "price": 100, "amount": 2, "unit": 50,
                 "time": "2026-11-19T12:15:00+00:00",
-            }) + "\\n", encoding="utf-8")
+            }) + "\n", encoding="utf-8")
             now = datetime(2026, 11, 19, 15, 0, tzinfo=ZoneInfo("Europe/Moscow"))
             with patch.object(publisher, "HISTORY_DEALS_DIR", source_dir):
                 grouped = publisher.load_and_group(now, ZoneInfo("Europe/Moscow"))
