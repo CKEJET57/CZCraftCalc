@@ -1,0 +1,11 @@
+[Unit]
+Description=CZCraftCalc: публикация почасовых агрегатов сделок в GitHub
+Wants=network-online.target docker.service
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=orangepi
+WorkingDirectory=/home/orangepi/CZCraftCalc
+ExecStart=/usr/bin/docker compose run --rm publisher
+TimeoutStartSec=30min
