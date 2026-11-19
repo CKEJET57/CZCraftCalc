@@ -23,6 +23,22 @@ database/
 
 Автоматический запуск — каждый час в `:05` по московскому времени. Например, в 14:05 публикуется завершённый интервал 13:00–14:00.
 
+Установка таймера на Orange Pi после размещения проекта в `/home/orangepi/CZCraftCalc`:
+
+```bash
+sudo cp deployment/systemd/czcraftcalc-publisher.service /etc/systemd/system/
+sudo cp deployment/systemd/czcraftcalc-publisher.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now czcraftcalc-publisher.timer
+systemctl list-timers czcraftcalc-publisher.timer
+```
+
+Проверка журнала:
+
+```bash
+sudo journalctl -u czcraftcalc-publisher.service -n 100 --no-pager
+```
+
 Ручной запуск из корня проекта:
 
 ```bash
