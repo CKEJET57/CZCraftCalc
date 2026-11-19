@@ -3,6 +3,7 @@ __pycache__/
 .git/
 .env
 database/history/
+database/publish/
 database/exclusions.json
 .venv/
 venv/
