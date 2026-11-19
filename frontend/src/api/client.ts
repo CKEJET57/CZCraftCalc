@@ -1,7 +1,7 @@
 import type {
   BatchReq, BatchResp, Category, HistoryReq, HistoryResp,
   Item, ItemDetails, ItemVariantsResp, MarketAnalysisResp,
-  RecipeReq, RecipeResp,
+  RecipeReq, RecipeResp, StatMeta,
 } from '../types/api'
 
 // Tauri предоставляет глобальный API только в desktop-сборке.
@@ -126,6 +126,6 @@ export const api = {
 
   statsMetadata: () =>
     isDesktop()
-      ? invokeDesktop<Record<string, unknown>[]>('get_stats_metadata')
-      : request<Record<string, unknown>[]>('/stats-metadata'),
+      ? invokeDesktop<StatMeta[]>('get_stats_metadata')
+      : request<StatMeta[]>('/stats-metadata'),
 }
