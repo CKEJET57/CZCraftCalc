@@ -28,6 +28,7 @@ env/
 *~
 
 # ─── Данные приложения ───
+database/publish/
 database/history/
 database/icons/
 database/items/
