@@ -273,14 +273,26 @@ def run(dry_run: bool = False) -> int:
 
     PUBLISH_DIR.mkdir(parents=True, exist_ok=True)
     state = load_state()
+    to_publish = {}
     for item_id, content in fresh.items():
-        atomic_write(queue_file(item_id), content)
+        queued_path = queue_file(item_id)
+        previous_queue = queued_path.read_text(encoding="utf-8") if queued_path.exists() else ""
+        merged_queue = merge_hourly(previous_queue, content)
+        atomic_write(queued_path, merged_queue)
+        to_publish[item_id] = merged_queue
+
+    # Также повторно отправляем очередь предметов, которые уже исчезли из
+    # исходного 30-дневного окна после предыдущей ошибки GitHub.
+    for queued_path in sorted(QUEUE_DIR.glob("*.jsonl")):
+        item_id = queued_path.stem
+        if item_id not in to_publish:
+            to_publish[item_id] = queued_path.read_text(encoding="utf-8")
 
     publisher = GitHubPublisher(token, repository, branch, base_branch)
-    changed = publisher.publish(fresh)
+    changed = publisher.publish(to_publish)
 
     published = state.setdefault("published", {})
-    for item_id, content in fresh.items():
+    for item_id, content in to_publish.items():
         published[item_id] = hashlib.sha256(content.encode("utf-8")).hexdigest()
     state["last_success_at"] = datetime.now(timezone.utc).isoformat()
     state["last_published_items"] = changed
