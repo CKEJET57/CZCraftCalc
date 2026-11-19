@@ -154,3 +154,4 @@
 {"item":"rr45","hour":"2026-11-19T18:00:00+03:00","deals":1,"amount":1,"turnover":600.0,"min_unit":600.0,"max_unit":600.0,"avg_unit":600.0,"median_unit":600.0,"source_records":1,"aggregated_at":"2026-11-19T18:05:35.835519+00:00"}
 {"item":"rr45","hour":"2026-11-19T19:00:00+03:00","deals":3,"amount":150,"turnover":56676.0,"min_unit":355.54,"max_unit":398.0,"avg_unit":377.84,"median_unit":379.98,"source_records":3,"aggregated_at":"2026-11-19T18:05:35.835519+00:00"}
 {"item":"rr45","hour":"2026-11-19T20:00:00+03:00","deals":6,"amount":55,"turnover":17348.0,"min_unit":270.27027,"max_unit":699.0,"avg_unit":315.418182,"median_unit":387.5,"source_records":6,"aggregated_at":"2026-11-19T18:05:35.835519+00:00"}
+{"item":"rr45","hour":"2026-11-19T21:00:00+03:00","deals":3,"amount":150,"turnover":58500.0,"min_unit":390.0,"max_unit":390.0,"avg_unit":390.0,"median_unit":390.0,"source_records":3,"aggregated_at":"2026-11-19T20:05:25.839097+00:00"}
