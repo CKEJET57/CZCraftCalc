@@ -101,3 +101,4 @@
 {"item":"vr1n","hour":"2026-11-18T16:00:00+03:00","deals":1,"amount":50,"turnover":27000.0,"min_unit":540.0,"max_unit":540.0,"avg_unit":540.0,"median_unit":540.0,"source_records":1,"aggregated_at":"2026-11-19T11:37:22.364458+00:00"}
 {"item":"vr1n","hour":"2026-11-18T19:00:00+03:00","deals":6,"amount":274,"turnover":153000.0,"min_unit":375.0,"max_unit":600.0,"avg_unit":558.394161,"median_unit":570.0,"source_records":6,"aggregated_at":"2026-11-19T11:37:22.364458+00:00"}
 {"item":"vr1n","hour":"2026-11-19T01:00:00+03:00","deals":1,"amount":24,"turnover":11628.0,"min_unit":484.5,"max_unit":484.5,"avg_unit":484.5,"median_unit":484.5,"source_records":1,"aggregated_at":"2026-11-19T11:37:22.364458+00:00"}
+{"item":"vr1n","hour":"2026-11-19T18:00:00+03:00","deals":3,"amount":150,"turnover":60000.0,"min_unit":400.0,"max_unit":400.0,"avg_unit":400.0,"median_unit":400.0,"source_records":3,"aggregated_at":"2026-11-19T16:05:15.228731+00:00"}
