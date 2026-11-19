@@ -43,7 +43,15 @@ docker compose run --rm publisher --dry-run
 
 ## Автоматический запуск на Orange Pi
 
-Установите unit-файлы из `deployment/systemd/` в `/etc/systemd/system/`, затем выполните:
+Скопируйте unit-файлы в systemd, затем активируйте таймер:
+
+```bash
+sudo cp deployment/systemd/czcraftcalc-publisher.service /etc/systemd/system/
+sudo cp deployment/systemd/czcraftcalc-publisher.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now czcraftcalc-publisher.timer
+systemctl list-timers czcraftcalc-publisher.timer
+```
 
 ```bash
 sudo systemctl daemon-reload
