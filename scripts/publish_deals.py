@@ -207,29 +207,55 @@ class GitHubPublisher:
     def publish(self, item_contents: dict[str, str]) -> int:
         if not item_contents:
             return 0
+
         parent_sha = self.branch_head()
         commit = self.request("GET", f"/git/commits/{parent_sha}")
         base_tree = commit["tree"]["sha"]
         changes = []
+
         for item_id, fresh in sorted(item_contents.items()):
             path = f"database/history/deals/{item_id}.jsonl"
-            merged = merge_hourly(self.read_item(item_id), fresh)
+            existing = self.read_item(item_id)
+            merged = merge_hourly(existing, fresh)
+
+            # Не создаём Git-объекты, если содержимое файла не изменилось.
+            if merged == existing:
+                continue
+
             blob = self.request("POST", "/git/blobs", json={
                 "content": base64.b64encode(merged.encode("utf-8")).decode("ascii"),
                 "encoding": "base64",
             })
-            changes.append({"path": path, "mode": "100644", "type": "blob", "sha": blob["sha"]})
+
+            changes.append({
+                "path": path,
+                "mode": "100644",
+                "type": "blob",
+                "sha": blob["sha"],
+            })
+
+        # Если изменений нет, новый коммит не требуется.
+        if not changes:
+            log("GitHub: опубликованные агрегаты не изменились; новый коммит не нужен")
+            return 0
+
         tree = self.request("POST", "/git/trees", json={
-            "base_tree": base_tree, "tree": changes,
+            "base_tree": base_tree,
+            "tree": changes,
         })
+
         commit = self.request("POST", "/git/commits", json={
             "message": "Опубликовать почасовые агрегаты сделок",
-            "tree": tree["sha"], "parents": [parent_sha],
+            "tree": tree["sha"],
+            "parents": [parent_sha],
         })
-        # Не force-push: если ветка изменилась параллельно, следующий запуск повторит операцию.
+
+        # Не force-push: при параллельном изменении ветки следующий запуск повторит операцию.
         self.request("PATCH", f"/git/refs/heads/{self.branch}", json={
-            "sha": commit["sha"], "force": False,
+            "sha": commit["sha"],
+            "force": False,
         })
+
         log(f"Опубликовано файлов предметов: {len(changes)}; commit={commit['sha'][:12]}")
         return len(changes)
 

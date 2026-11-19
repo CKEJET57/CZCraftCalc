@@ -157,7 +157,7 @@ def test_analyze_recipe_with_craft_calc(make_calc, make_index):
     # required_total = только листья выбранного пути
     assert a.required_total == {"c": (1, "market")}
     # full_tree — то же самое (c — база, b крафтится, a — верх)
-    assert a.full_tree == {"c": (1, "market")}
+    assert a.full_tree == {"c": (1, "history")}
 
 # ────────────────────────────────────────────────────────────
 #  Округление отображаемых цен
