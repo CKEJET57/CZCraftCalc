@@ -1,17 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { api } from '../api/client'
+import type { StatMeta } from '../types/api'
 import { LoadingSpinner } from '../components/LoadingSpinner'
 import { ErrorBox } from '../components/ErrorBox'
-
-interface StatMeta {
-  id: string
-  category: string
-  type: string
-  name: {
-    lines?: { ru?: string; en?: string }
-    text?: string
-  }
-}
 
 interface CharData {
   username: string
@@ -44,7 +35,7 @@ export function CharacterPage() {
   useEffect(() => {
     api.statsMetadata()
       .then((list) => {
-        const dict = (list as StatMeta[]).reduce((acc, item) => {
+        const dict = list.reduce((acc, item) => {
           acc[item.id] = item
           return acc
         }, {} as Record<string, StatMeta>)
