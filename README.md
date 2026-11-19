@@ -554,3 +554,19 @@ bash scripts/codespace.sh status
 bash scripts/codespace.sh logs
 bash scripts/codespace.sh down
 ```
+
+## Публикация почасовых агрегатов сделок
+
+Публикатор отдельно читает локальные сделки и отправляет почасовые агрегаты в ветку `market-data`. Исходные каталоги `database/history/deals/` и `database/history/snapshots/` он не изменяет. Настройка GitHub token, ручной запуск, расписание Orange Pi и формат данных описаны в [документации публикации](docs/PUBLISHING.md).
+
+Ручной запуск:
+
+```bash
+docker compose run --rm publisher
+```
+
+Проверка без отправки в GitHub:
+
+```bash
+docker compose run --rm publisher --dry-run
+```
