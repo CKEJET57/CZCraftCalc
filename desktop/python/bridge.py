@@ -70,10 +70,9 @@ def _search_character(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
-    """Вызывает существующие обработчики FastAPI напрямую, без HTTP-сервера.
+    """Вызывает общие прикладные операции без запуска HTTP-сервера.
 
-    Перед обращением к справочникам выполняет ту же подготовку database,
-    что и обычный запуск backend через FastAPI/CLI.
+    Перед обращением к справочникам подготавливает локальные файлы database.
     """
     from storage.downloader import ensure_database_files
 
