@@ -11,6 +11,7 @@ scripts/analyze.py — сводка по истории: ликвидность 
 import argparse
 import sys
 
+from config import LOCAL_TIMEZONE
 from core.display import fmt_price
 from services.history_store import load_deals, load_snapshots
 from services.market_analysis import (
