@@ -202,3 +202,4 @@
 {"item":"vrpd","hour":"2026-11-19T21:00:00+03:00","deals":17,"amount":140,"turnover":867586.0,"min_unit":3000.0,"max_unit":8400.0,"avg_unit":6197.042857,"median_unit":5909.090909,"source_records":17,"aggregated_at":"2026-11-19T20:05:25.839097+00:00"}
 {"item":"vrpd","hour":"2026-11-19T22:00:00+03:00","deals":4,"amount":55,"turnover":310222.0,"min_unit":1000.0,"max_unit":6000.0,"avg_unit":5640.4,"median_unit":2305.5,"source_records":4,"aggregated_at":"2026-11-19T22:05:19.520294+00:00"}
 {"item":"vrpd","hour":"2026-11-19T23:00:00+03:00","deals":2,"amount":90,"turnover":480000.0,"min_unit":5000.0,"max_unit":5750.0,"avg_unit":5333.333333,"median_unit":5375.0,"source_records":2,"aggregated_at":"2026-11-19T22:05:19.520294+00:00"}
+{"item":"vrpd","hour":"2026-11-20T07:00:00+03:00","deals":2,"amount":3,"turnover":13400.0,"min_unit":4450.0,"max_unit":4500.0,"avg_unit":4466.666667,"median_unit":4475.0,"source_records":2,"aggregated_at":"2026-11-20T06:05:23.403533+00:00"}
