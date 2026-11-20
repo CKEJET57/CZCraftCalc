@@ -5,7 +5,9 @@ import json
 from functools import lru_cache
 
 from config import DB_DIR
-from core.analysis import analyze_batch, analyze_history, analyze_recipe_by_id
+from core.batch_analysis import analyze_batch
+from core.history_analysis import analyze_history
+from core.recipe_analysis import analyze_recipe_by_id
 from core.options import AnalysisOptions
 from services.serialization import serialize_batch, serialize_history, serialize_recipe_list
 from storage.hideout import filter_recipes

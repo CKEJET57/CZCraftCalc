@@ -1,6 +1,4 @@
-"""
-server/deps.py — синглтон-состояние процесса API.
-"""
+"""Общее состояние приложения для HTTP, Desktop и CLI-адаптеров."""
 from __future__ import annotations
 
 import threading
