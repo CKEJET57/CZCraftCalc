@@ -84,19 +84,19 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
         batch_operation, history_operation, recipe_operation,
     )
     from services.market_analysis import analyze_market
-    from server.routes import meta
+    from services import catalog
 
     state = get_state()
     if action == "items":
-        return meta.list_items(
+        return catalog.list_items(state,
             lang=str(payload.get("lang") or "ru"),
             q=payload.get("q"),
             craftable=bool(payload.get("craftable", False)),
         )
     if action == "categories":
-        return meta.list_categories(lang=str(payload.get("lang") or "ru"))
+        return catalog.list_categories(state,lang=str(payload.get("lang") or "ru"))
     if action == "item_details":
-        result = meta.get_item_details(
+        result = catalog.get_item_details(state,
             str(payload.get("item_id") or ""), lang=str(payload.get("lang") or "ru")
         )
         icon_url = result.get("icon_url")
@@ -113,7 +113,7 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
                 result["icon_url"] = None
         return result
     if action == "item_variants":
-        return meta.get_item_variants(
+        return catalog.get_item_variants(state,
             str(payload.get("item_id") or ""), lang=str(payload.get("lang") or "ru")
         )
     if action == "recipe":
@@ -130,7 +130,7 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
             str(payload.get("item_id") or ""), int(payload.get("days") or 7)
         )
     if action == "health":
-        return meta.health()
+        return catalog.health()
     raise ValueError(f"Неизвестная desktop-команда: {action}")
 
 
