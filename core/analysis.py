@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from config import ENERGY_ITEM_ID, EXCLUDED_TOP_CATEGORIES
+from config import EXCLUDED_TOP_CATEGORIES
+from core.prefetch import collect_prefetch_items, prefetch
 from services.craft import RecipeAnalysis, analyze_recipe
 from storage.hideout import extract_category_id, find_recipes_by_result
 
@@ -45,28 +46,7 @@ class HistoryResult:
     raw_sample: dict | None = None
 
 
-# ─── prefetch ─────────────────────────────────────────────────────
-def collect_prefetch_items(opts, ctx, recipes: list[dict]) -> set[str]:
-    if ctx.craft_calc is not None and opts.recursive:
-        return ctx.craft_calc.collect_tree_items(recipes)
-    items = set() if ENERGY_ITEM_ID in ctx.exclusions else {ENERGY_ITEM_ID}
-    for r in recipes:
-        for res in r.get("result", []):
-            items.add(res["item"])
-        for ing in r.get("ingredients", []):
-            if ing["item"] in ctx.exclusions:
-                continue
-            items.add(ing["item"])
-    return items
-
-
-def prefetch(opts, ctx, recipes: list[dict], progress=None) -> int:
-    items = collect_prefetch_items(opts, ctx, recipes)
-    todo = [i for i in items if not ctx.price_service.is_cached(i)]
-    if todo:
-        ctx.price_service.prefetch(todo, workers=opts.workers, progress=progress)
-    return len(todo)
-
+# Prefetch вынесен в core.prefetch; импортирован выше.
 
 # ─── recipe ───────────────────────────────────────────────────────
 def analyze_recipe_by_id(item_id: str, opts, ctx) -> list[RecipeAnalysis]:

@@ -8,8 +8,9 @@ import sys
 import time
 from datetime import datetime, timedelta, timezone
 
-from config import ENERGY_ITEM_ID, EXCLUDED_TOP_CATEGORIES, LOCAL_TIMEZONE
+from config import EXCLUDED_TOP_CATEGORIES, LOCAL_TIMEZONE
 from core.analysis import analyze_recipe_by_id, analyze_batch
+from core.prefetch import build_prefetch_plan, execute_prefetch
 from core.display import (
     fmt_pct, fmt_price, print_analysis, print_stats,
 )
@@ -54,38 +55,19 @@ def _fmt_datetime(iso_str: str | None) -> str:
 # ──────────────────────────────────────────────────────────────────
 #  Prefetch (внутренний)
 # ──────────────────────────────────────────────────────────────────
-def _direct_items(recipes: list[dict], exclusions: set[str]) -> set[str]:
-    items = set() if ENERGY_ITEM_ID in exclusions else {ENERGY_ITEM_ID}
-    for r in recipes:
-        for res in r.get("result", []):
-            items.add(res["item"])
-        for ing in r.get("ingredients", []):
-            if ing["item"] in exclusions:
-                continue
-            items.add(ing["item"])
-    return items
-
-
 def _prefetch(ctx, recipes: list[dict], opts) -> None:
-    if ctx.craft_calc is not None:
-        items = (ctx.craft_calc.collect_tree_items(recipes)
-                 if opts.recursive
-                 else _direct_items(recipes, ctx.exclusions))
-    else:
-        items = _direct_items(recipes, ctx.exclusions)
-
-    todo = [i for i in items if not ctx.price_service.is_cached(i)]
-    if not todo:
-        print(f"→ Все {len(items)} itemId в кэше")
+    plan = build_prefetch_plan(opts, ctx, recipes)
+    if not plan.missing:
+        print(f"→ Все {len(plan.items)} itemId в кэше")
         return
-    label = f"Prefetch цен ({len(todo)} itemId, workers={opts.workers})"
+    label = f"Prefetch цен ({len(plan.missing)} itemId, workers={opts.workers})"
     print()
     with phase(label, label_width=55):
         def _progress(done, total, current_id):
             name = get_item_name(ctx.item_index, current_id)
             sys.stdout.write(f"\r   [{done:3d}/{total:3d}] {name[:40]:40s}")
             sys.stdout.flush()
-        ctx.price_service.prefetch(todo, workers=opts.workers, progress=_progress)
+        execute_prefetch(plan, opts, ctx, progress=_progress)
     print()
 
 
