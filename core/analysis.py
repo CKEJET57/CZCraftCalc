@@ -3,6 +3,10 @@
 Реализация разделена по областям ответственности. Импорты из core.analysis
 сохранены, чтобы не ломать существующие CLI, HTTP и внешние вызовы.
 """
+from config import EXCLUDED_TOP_CATEGORIES
+from services.craft import RecipeAnalysis, analyze_recipe
+from storage.hideout import extract_category_id, find_recipes_by_result
+
 from core.batch_analysis import (
     BatchResult,
     BatchSection,
@@ -24,4 +28,9 @@ __all__ = [
     "analyze_recipe_by_id",
     "analyze_batch",
     "analyze_history",
+    "EXCLUDED_TOP_CATEGORIES",
+    "RecipeAnalysis",
+    "analyze_recipe",
+    "extract_category_id",
+    "find_recipes_by_result",
 ]
