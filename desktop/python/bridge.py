@@ -79,10 +79,14 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
 
     ensure_database_files()
 
-    from fastapi import HTTPException
-    from server.routes import analysis, batch, history, meta, recipes
-    from server.schemas import BatchReq, HistoryReq, RecipeReq
+    from server.deps import get_state
+    from services.application import (
+        batch_operation, history_operation, recipe_operation,
+    )
+    from services.market_analysis import analyze_market
+    from server.routes import meta
 
+    state = get_state()
     if action == "items":
         return meta.list_items(
             lang=str(payload.get("lang") or "ru"),
@@ -113,14 +117,17 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
             str(payload.get("item_id") or ""), lang=str(payload.get("lang") or "ru")
         )
     if action == "recipe":
-        return recipes.recipe(RecipeReq(**payload))
+        return recipe_operation(state, payload)
     if action == "batch":
-        return batch.batch(BatchReq(**payload))
+        return batch_operation(state, payload)
     if action == "history":
-        return history.history(HistoryReq(**payload))
+        result = history_operation(state, payload)
+        if result is None:
+            raise ValueError(f"Нет истории для {payload.get('item_id')}")
+        return result
     if action == "market_analysis":
-        return analysis.market_analysis(
-            str(payload.get("item_id") or ""), days=int(payload.get("days") or 7)
+        return analyze_market(
+            str(payload.get("item_id") or ""), int(payload.get("days") or 7)
         )
     if action == "health":
         return meta.health()
