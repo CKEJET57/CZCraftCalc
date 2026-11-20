@@ -78,7 +78,7 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
 
     ensure_database_files()
 
-    from server.deps import get_state
+    from services.app_state import get_state
     from services.application import (
         batch_operation, history_operation, recipe_operation,
     )
