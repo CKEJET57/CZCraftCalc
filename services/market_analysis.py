@@ -89,58 +89,6 @@ def _liquidity(deals, snapshots, days):
     }
 
 
-def _liquidity(deals, snapshots, days):
-    n_days = max(days, 1)
-    units = sum(d["amount"] for d in deals)
-    rub = sum(d["price"] for d in deals)
-    units_per_day = units / n_days
-    rub_per_day = rub / n_days
-
-    snap_amounts = [s["summary"]["total_amount"] for s in snapshots]
-    snap_lots = [s["summary"]["n_lots"] for s in snapshots]
-    snap_min = [s["summary"]["min_unit"] for s in snapshots]
-    snap_depth = [s["summary"]["depth_10pct_amount"] for s in snapshots]
-
-    active_amount = statistics.median(snap_amounts) if snap_amounts else 0
-    active_lots = statistics.median(snap_lots) if snap_lots else 0
-    min_unit = statistics.median(snap_min) if snap_min else 0
-    depth_amount = statistics.median(snap_depth) if snap_depth else 0
-
-    median_sold = statistics.median([d["unit"] for d in deals]) if deals else 0
-
-    days_to_sell = (active_amount / units_per_day) if units_per_day > 0 else None
-    turnover = (units_per_day / (active_amount + units_per_day)
-                if (active_amount + units_per_day) > 0 else None)
-    spread_pct = ((min_unit - median_sold) / median_sold * 100
-                  if median_sold > 0 and min_unit > 0 else None)
-
-    if units_per_day >= 50 and (days_to_sell is None or days_to_sell <= 2):
-        level, level_code = "🟢 ВЫСОКАЯ", "HIGH"
-    elif units_per_day >= 5 and (days_to_sell is None or days_to_sell <= 7):
-        level, level_code = "🟡 СРЕДНЯЯ", "MEDIUM"
-    else:
-        level, level_code = "🔴 НИЗКАЯ", "LOW"
-
-    return {
-        "deals": len(deals),
-        "units": units,
-        "rub": rub,
-        "deals_per_day": len(deals) / n_days,
-        "units_per_day": units_per_day,
-        "rub_per_day": rub_per_day,
-        "active_amount": active_amount,
-        "active_lots": active_lots,
-        "min_unit": min_unit,
-        "median_sold": median_sold,
-        "depth_amount": depth_amount,
-        "days_to_sell": days_to_sell,
-        "turnover": turnover,
-        "spread_pct": spread_pct,
-        "level": level,
-        "level_code": level_code,
-    }
-
-
 def _best_time(deals, days):
     """Возвращает {'by_hour': [...], 'by_weekday': [...], 'by_day': [...], 'overall_median': float}.
     Дневная выборка обрезана до последних 7 дней (для тренда)."""
