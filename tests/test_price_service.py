@@ -67,6 +67,26 @@ def test_budget_exhausted(make_price_service):
     assert info.unit_price is None
 
 
+
+def test_request_budget_can_be_reset_between_collection_passes(make_price_service):
+    ps = make_price_service(max_requests=1)
+    ps._session = Mock()
+    response = _resp(200, {"prices": []})
+    ps._session.get = Mock(return_value=response)
+
+    ps.get_history("first")
+    assert ps.stats()["budget_exhausted"] is True
+    assert ps.stats()["requests"] == 1
+
+    ps.reset_request_budget()
+    assert ps.stats()["budget_exhausted"] is False
+    assert ps.stats()["requests"] == 0
+
+    ps.get_history("second")
+    assert ps.stats()["requests"] == 1
+    assert ps._session.get.call_count == 2
+
+
 def test_cache_hit(make_price_service):
     ps = make_price_service(use_history=True, fallback_to_lots=False)
     ps._session = Mock()
