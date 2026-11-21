@@ -202,6 +202,12 @@ class PriceService:
                 if progress:
                     progress(done, total, iid)
 
+    def reset_request_budget(self) -> None:
+        """Сбрасывает счётчик запросов перед новым циклом сбора."""
+        with self._lock:
+            self._requests_made = 0
+            self._started_at = time.time()
+
     def stats(self) -> dict:
         with self._lock:
             return {
