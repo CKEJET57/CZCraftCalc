@@ -29,14 +29,24 @@ def _log(msg: str) -> None:
 
 def collect_once(price_service: PriceService, items: list[str],
                  limit: int = 200, verbose: bool = False) -> dict:
+    # Бюджет ограничивает один проход, а не всё время жизни демона.
+    price_service.reset_request_budget()
     state = load_state()
-    summary = {"items": 0, "new_deals": 0, "snapshots": 0, "errors": 0}
+    summary = {"items": 0, "new_deals": 0, "snapshots": 0, "errors": 0,
+               "skipped_items": 0, "skipped_requests": 0}
 
     for item_id in items:
         summary["items"] += 1
         ts_now = datetime.now(timezone.utc).isoformat()
 
         # ─── 1. Deals ───
+        if price_service.stats()["budget_exhausted"]:
+            _log(f"  ! budget exhausted, skip {item_id}/history")
+            _log(f"  ! budget exhausted, skip {item_id}/lots")
+            summary["skipped_items"] += 1
+            summary["skipped_requests"] += 2
+            continue
+
         try:
             history = price_service.get_history(item_id, limit)
         except (ApiAuthError, ApiRateLimitError):
@@ -58,6 +68,16 @@ def collect_once(price_service: PriceService, items: list[str],
             summary["new_deals"] += append_deals(item_id, new_deals)
 
         # ─── 2. Snapshot ───
+        if price_service.stats()["budget_exhausted"]:
+            _log(f"  ! budget exhausted, skip {item_id}/lots")
+            summary["skipped_items"] += 1
+            summary["skipped_requests"] += 1
+            # История могла сохраниться, но товар обработан не полностью.
+            # Не обновляем last_run для неполного прохода.
+            if verbose or new_deals:
+                _log(f"  · {item_id}: +{len(new_deals)} deals; lots пропущены")
+            continue
+
         try:
             lots_data = price_service.get_lots(item_id, limit)
         except (ApiAuthError, ApiRateLimitError):
@@ -110,7 +130,12 @@ def run_daemon(price_service, items, interval, limit, verbose,
             _log(f"✓ items={summary['items']} "
                  f"new_deals={summary['new_deals']} "
                  f"snapshots={summary['snapshots']} "
-                 f"errors={summary['errors']} ({time.time()-t0:.1f}s)")
+                 f"errors={summary['errors']} "
+                 f"skipped_items={summary['skipped_items']} "
+                 f"skipped_requests={summary['skipped_requests']} "
+                 f"requests={price_service.stats()['requests']}/"
+                 f"{price_service.stats()['max_requests']} "
+                 f"({time.time()-t0:.1f}s)")
             sleep_for = max(0, interval - (time.time() - t0))
             _log(f"⏸  пауза {sleep_for:.0f}с")
             time.sleep(sleep_for)
@@ -198,7 +223,9 @@ def main() -> int:
             return 0
         summary = collect_once(ps, items, args.limit, args.verbose)
         _log(f"✓ items={summary['items']} new_deals={summary['new_deals']} "
-             f"snapshots={summary['snapshots']} errors={summary['errors']}")
+             f"snapshots={summary['snapshots']} errors={summary['errors']} "
+             f"skipped_items={summary['skipped_items']} "
+             f"skipped_requests={summary['skipped_requests']}")
         return 0
     except ApiAuthError as e:
         _log(f"✗ Ошибка авторизации API: {e}")
