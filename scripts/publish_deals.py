@@ -256,13 +256,15 @@ class GitHubPublisher:
         return base64.b64decode(payload["content"]).decode("utf-8")
 
     def publish(self, item_contents: dict[str, str], index_content: str | None = None) -> int:
-        if not item_contents:
+        if not item_contents and index_content is None:
             return 0
 
         parent_sha = self.branch_head()
         commit = self.request("GET", f"/git/commits/{parent_sha}")
         base_tree = commit["tree"]["sha"]
         changes = []
+        item_changes = 0
+        index_changed = False
 
         for item_id, fresh in sorted(item_contents.items()):
             path = f"database/history/deals/{item_id}.jsonl"
@@ -284,6 +286,7 @@ class GitHubPublisher:
                 "type": "blob",
                 "sha": blob["sha"],
             })
+            item_changes += 1
 
         if index_content is not None:
             index_path = "database/market/top_items.json"
@@ -297,6 +300,7 @@ class GitHubPublisher:
                     "path": index_path, "mode": "100644",
                     "type": "blob", "sha": blob["sha"],
                 })
+                index_changed = True
 
         # Если изменений нет, новый коммит не требуется.
         if not changes:
@@ -320,8 +324,12 @@ class GitHubPublisher:
             "force": False,
         })
 
-        log(f"Опубликовано файлов предметов: {len(changes)}; commit={commit['sha'][:12]}")
-        return len(changes)
+        log(
+            f"Опубликовано файлов предметов: {item_changes}; "
+            f"индекс рейтинга обновлён: {'да' if index_changed else 'нет'}; "
+            f"commit={commit['sha'][:12]}"
+        )
+        return item_changes
 
 
 def cleanup_queue(state: dict, now: datetime) -> int:
