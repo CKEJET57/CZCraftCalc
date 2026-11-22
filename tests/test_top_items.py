@@ -28,15 +28,34 @@ def test_top_items_index_uses_one_latest_hour_and_sorts_by_deals():
         }),
     }
 
-    result = json.loads(build_top_items_index(contents))
+    result = json.loads(build_top_items_index(contents, {"item-a", "item-b"}))
 
     assert result["hour"] == "2026-11-22T11:00:00+03:00"
     assert [row["item"] for row in result["items"]] == ["item-b", "item-a"]
+    assert "item-c" not in [row["item"] for row in result["items"]]
     assert result["items"][0] == {
         "item": "item-b", "deals": 20, "turnover": 2000.0, "median_unit": 100.0,
     }
 
 
 def test_top_items_index_returns_empty_when_there_are_no_valid_rows():
-    result = json.loads(build_top_items_index({"item-a": "not-json"}))
+    result = json.loads(build_top_items_index({"item-a": "not-json"}, {"item-a"}))
     assert result == {"hour": None, "items": []}
+
+
+
+def test_top_items_index_excludes_non_craftable_items():
+    contents = {
+        "craftable": json.dumps({
+            "item": "craftable", "hour": "2026-11-22T11:00:00+03:00",
+            "deals": 3, "turnover": 300, "median_unit": 100,
+        }),
+        "not-craftable": json.dumps({
+            "item": "not-craftable", "hour": "2026-11-22T11:00:00+03:00",
+            "deals": 100, "turnover": 10000, "median_unit": 100,
+        }),
+    }
+
+    result = json.loads(build_top_items_index(contents, {"craftable"}))
+
+    assert [row["item"] for row in result["items"]] == ["craftable"]

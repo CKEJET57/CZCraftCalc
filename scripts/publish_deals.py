@@ -21,7 +21,8 @@ from zoneinfo import ZoneInfo
 
 import requests
 
-from config import DB_DIR, LOCAL_TIMEZONE
+from config import DB_DIR, LISTING_CRAFT_FILE, LOCAL_TIMEZONE
+from storage.listing import extract_item_id, load_listing
 
 HISTORY_DEALS_DIR = DB_DIR / "history" / "deals"
 PUBLISH_DIR = DB_DIR / "publish"
@@ -122,8 +123,10 @@ def aggregate_item(item_id: str, hourly: dict[datetime, list[dict]], generated_a
         })
     return "".join(json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n" for row in rows)
 
-def build_top_items_index(item_contents: dict[str, str]) -> str:
-    """Строит единый рейтинг по самому позднему завершённому часу."""
+def build_top_items_index(
+    item_contents: dict[str, str], craftable_item_ids: set[str],
+) -> str:
+    """Строит рейтинг крафтовых предметов за один общий последний час."""
     latest_dt = None
     latest_hour = None
     rows_by_hour = []
@@ -133,6 +136,8 @@ def build_top_items_index(item_contents: dict[str, str]) -> str:
                 continue
             try:
                 row = json.loads(line)
+                if str(row.get("item") or "") not in craftable_item_ids:
+                    continue
                 hour_text = row["hour"]
                 hour_dt = parse_time(hour_text)
                 if hour_dt is None:
@@ -431,7 +436,12 @@ def run(dry_run: bool = False) -> int:
             to_publish[item_id] = queued_path.read_text(encoding="utf-8")
 
     publisher = GitHubPublisher(token, repository, branch, base_branch)
-    index_content = build_top_items_index(to_publish)
+    craftable_item_ids = {
+        item_id
+        for item_id in (extract_item_id(item) for item in load_listing(LISTING_CRAFT_FILE))
+        if item_id
+    }
+    index_content = build_top_items_index(to_publish, craftable_item_ids)
     publisher.publish_index(index_content)
     changed = publisher.publish(to_publish)
 

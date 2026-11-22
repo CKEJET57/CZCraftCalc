@@ -44,9 +44,18 @@ def get_top_items(state, limit: int = 100) -> dict:
         item_id = str(row.get("item") or "")
         if not item_id:
             continue
+        # Старый индекс может содержать предметы, удалённые из каталога крафта.
+        if item_id not in state.craftable_index:
+            continue
+        item = state.item_index.get(item_id)
+        if item is None:
+            continue
+        icon_path = item.get("icon") or ""
         items.append({
             "item_id": item_id,
             "name": get_item_name(state.item_index, item_id, "ru"),
+            "color": item.get("color", "DEFAULT"),
+            "icon_url": f"/api/static{icon_path}" if icon_path else None,
             "deals": int(row.get("deals") or 0),
             "turnover": float(row.get("turnover") or 0),
             "median_unit": float(row.get("median_unit") or 0),

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api/client'
 import type { TopItemsResp } from '../types/api'
+import { getRankColor } from '../utils/rankColors'
 
 function money(value: number): string {
   return Math.round(value).toLocaleString('ru-RU') + ' ₽'
@@ -61,7 +62,7 @@ export function TopItemsPage() {
       {!loading && !error && data && data.items.length > 0 && (
         <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/40">
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[680px] text-sm">
+            <table className="w-full min-w-[720px] text-sm">
               <thead className="bg-slate-900 text-xs uppercase tracking-wide text-slate-400">
                 <tr>
                   <th className="px-4 py-3 text-right">#</th>
@@ -75,9 +76,24 @@ export function TopItemsPage() {
                 {data.items.map((item, index) => (
                   <tr key={item.item_id} className="border-t border-slate-800 hover:bg-slate-800/40">
                     <td className="px-4 py-3 text-right font-mono text-slate-500">{index + 1}</td>
-                    <td className="px-4 py-3">
-                      <div className="font-medium text-slate-100">{item.name}</div>
-                      <div className="font-mono text-xs text-slate-500">{item.item_id}</div>
+                    <td className="px-4 py-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {item.icon_url && (
+                          <img
+                            src={item.icon_url}
+                            alt=""
+                            loading="lazy"
+                            className="w-14 h-14 shrink-0 object-contain rounded border border-slate-700 bg-slate-900/60 p-1"
+                            onError={e => { e.currentTarget.style.display = 'none' }}
+                          />
+                        )}
+                        <div
+                          className="min-w-0 font-semibold"
+                          style={{ color: getRankColor(item.color) }}
+                        >
+                          {item.name}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-right font-mono font-semibold text-emerald-300">
                       {item.deals.toLocaleString('ru-RU')}

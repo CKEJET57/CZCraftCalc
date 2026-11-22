@@ -258,6 +258,8 @@ export interface MarketAnalysisResp {
 export interface TopItem {
   item_id: string
   name: string
+  color: string
+  icon_url: string | null
   deals: number
   turnover: number
   median_unit: number
