@@ -255,6 +255,38 @@ class GitHubPublisher:
             raise PublishError(f"Неожиданный формат GitHub Contents для {path}")
         return base64.b64decode(payload["content"]).decode("utf-8")
 
+    def publish_index(self, index_content: str) -> bool:
+        """Публикует индекс рейтинга отдельным быстрым коммитом до обновления 429 файлов."""
+        path = "database/market/top_items.json"
+        existing = self.read_market_index()
+        if existing == index_content:
+            log("GitHub: индекс рейтинга уже актуален")
+            return False
+
+        parent_sha = self.branch_head()
+        commit_data = self.request("GET", f"/git/commits/{parent_sha}")
+        blob = self.request("POST", "/git/blobs", json={
+            "content": base64.b64encode(index_content.encode("utf-8")).decode("ascii"),
+            "encoding": "base64",
+        })
+        tree = self.request("POST", "/git/trees", json={
+            "base_tree": commit_data["tree"]["sha"],
+            "tree": [{
+                "path": path, "mode": "100644",
+                "type": "blob", "sha": blob["sha"],
+            }],
+        })
+        commit = self.request("POST", "/git/commits", json={
+            "message": "Обновить индекс самых продаваемых предметов",
+            "tree": tree["sha"],
+            "parents": [parent_sha],
+        })
+        self.request("PATCH", f"/git/refs/heads/{self.branch}", json={
+            "sha": commit["sha"], "force": False,
+        })
+        log(f"GitHub: индекс рейтинга опубликован; commit={commit['sha'][:12]}")
+        return True
+
     def publish(self, item_contents: dict[str, str], index_content: str | None = None) -> int:
         if not item_contents and index_content is None:
             return 0
@@ -400,7 +432,8 @@ def run(dry_run: bool = False) -> int:
 
     publisher = GitHubPublisher(token, repository, branch, base_branch)
     index_content = build_top_items_index(to_publish)
-    changed = publisher.publish(to_publish, index_content)
+    publisher.publish_index(index_content)
+    changed = publisher.publish(to_publish)
 
     published = state.setdefault("published", {})
     for item_id, content in to_publish.items():
