@@ -159,3 +159,4 @@
 {"item":"qvrk","hour":"2026-11-22T00:00:00+03:00","deals":2,"amount":52,"turnover":111020.0,"min_unit":510.0,"max_unit":2200.0,"avg_unit":2135.0,"median_unit":1355.0,"source_records":2,"aggregated_at":"2026-11-22T00:05:37.108978+00:00"}
 {"item":"qvrk","hour":"2026-11-22T01:00:00+03:00","deals":6,"amount":209,"turnover":303400.0,"min_unit":1000.0,"max_unit":2400.0,"avg_unit":1451.674641,"median_unit":1200.0,"source_records":6,"aggregated_at":"2026-11-22T00:05:37.108978+00:00"}
 {"item":"qvrk","hour":"2026-11-22T04:00:00+03:00","deals":3,"amount":101,"turnover":132109.0,"min_unit":999.0,"max_unit":1311.1,"avg_unit":1308.009901,"median_unit":1311.1,"source_records":3,"aggregated_at":"2026-11-22T02:05:29.666870+00:00"}
+{"item":"qvrk","hour":"2026-11-22T08:00:00+03:00","deals":1,"amount":3,"turnover":1400.0,"min_unit":466.666667,"max_unit":466.666667,"avg_unit":466.666667,"median_unit":466.666667,"source_records":1,"aggregated_at":"2026-11-22T06:05:14.098880+00:00"}
