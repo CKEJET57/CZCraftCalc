@@ -1,7 +1,7 @@
 import type {
   BatchReq, BatchResp, Category, HistoryReq, HistoryResp,
   Item, ItemDetails, ItemVariantsResp, MarketAnalysisResp,
-  RecipeReq, RecipeResp, StatMeta,
+  RecipeReq, RecipeResp, StatMeta, TopItemsResp,
 } from '../types/api'
 
 // Tauri предоставляет глобальный API только в desktop-сборке.
@@ -109,6 +109,10 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(body),
       }),
+
+  topItems: (limit = 100) => isDesktop()
+    ? desktopRequest<TopItemsResp>('top_items', { limit })
+    : request<TopItemsResp>('/top-items?limit=' + limit),
 
   marketAnalysis: (itemId: string, days = 7) => isDesktop()
     ? desktopRequest<MarketAnalysisResp>('market_analysis', { item_id: itemId, days })

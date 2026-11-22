@@ -14,6 +14,7 @@ export function HomePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card to="/batch" title="🏆 Топ по категориям" desc="Пакетный анализ: самые прибыльные рецепты." />
         <Card to="/items" title="📋 Список предметов" desc="Описание, рецепт крафта и полная история торгов." />
+        <Card to="/top-items" title="📈 Самые продаваемые" desc="Рейтинг предметов по количеству сделок за последний завершённый час." />
         <Card to="/character" title="🧑 Профиль персонажа" desc="Публичные данные по нику." />
       </div>
     </div>

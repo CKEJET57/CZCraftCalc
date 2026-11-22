@@ -122,6 +122,42 @@ def aggregate_item(item_id: str, hourly: dict[datetime, list[dict]], generated_a
         })
     return "".join(json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n" for row in rows)
 
+def build_top_items_index(item_contents: dict[str, str]) -> str:
+    """Строит единый рейтинг по самому позднему завершённому часу."""
+    latest_dt = None
+    latest_hour = None
+    rows_by_hour = []
+    for content in item_contents.values():
+        for line in content.splitlines():
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+                hour_text = row["hour"]
+                hour_dt = parse_time(hour_text)
+                if hour_dt is None:
+                    continue
+                rows_by_hour.append((hour_dt, row))
+                if latest_dt is None or hour_dt > latest_dt:
+                    latest_dt, latest_hour = hour_dt, hour_text
+            except (json.JSONDecodeError, KeyError, TypeError):
+                continue
+    items = []
+    if latest_dt is not None:
+        for hour_dt, row in rows_by_hour:
+            if hour_dt == latest_dt:
+                items.append({
+                    "item": str(row.get("item") or ""),
+                    "deals": int(row.get("deals") or 0),
+                    "turnover": float(row.get("turnover") or 0),
+                    "median_unit": float(row.get("median_unit") or 0),
+                })
+        items.sort(key=lambda item: (-item["deals"], -item["turnover"], item["item"]))
+    return json.dumps(
+        {"hour": latest_hour, "items": items},
+        ensure_ascii=False, separators=(",", ":"),
+    ) + "\n"
+
 
 def load_state() -> dict:
     if not STATE_FILE.exists():
@@ -204,7 +240,22 @@ class GitHubPublisher:
             raise PublishError(f"Неожиданный формат GitHub Contents для {path}")
         return base64.b64decode(payload["content"]).decode("utf-8")
 
-    def publish(self, item_contents: dict[str, str]) -> int:
+    def read_market_index(self) -> str:
+        path = "database/market/top_items.json"
+        response = self.session.get(
+            self.root + f"/contents/{path}",
+            params={"ref": self.branch}, timeout=45,
+        )
+        if response.status_code == 404:
+            return ""
+        if response.status_code >= 400:
+            raise PublishError(f"Не удалось прочитать {path}: HTTP {response.status_code}")
+        payload = response.json()
+        if payload.get("encoding") != "base64":
+            raise PublishError(f"Неожиданный формат GitHub Contents для {path}")
+        return base64.b64decode(payload["content"]).decode("utf-8")
+
+    def publish(self, item_contents: dict[str, str], index_content: str | None = None) -> int:
         if not item_contents:
             return 0
 
@@ -234,9 +285,22 @@ class GitHubPublisher:
                 "sha": blob["sha"],
             })
 
+        if index_content is not None:
+            index_path = "database/market/top_items.json"
+            existing_index = self.read_market_index()
+            if index_content != existing_index:
+                blob = self.request("POST", "/git/blobs", json={
+                    "content": base64.b64encode(index_content.encode("utf-8")).decode("ascii"),
+                    "encoding": "base64",
+                })
+                changes.append({
+                    "path": index_path, "mode": "100644",
+                    "type": "blob", "sha": blob["sha"],
+                })
+
         # Если изменений нет, новый коммит не требуется.
         if not changes:
-            log("GitHub: опубликованные агрегаты не изменились; новый коммит не нужен")
+            log("GitHub: агрегаты и индекс рейтинга не изменились; новый коммит не нужен")
             return 0
 
         tree = self.request("POST", "/git/trees", json={
@@ -327,7 +391,8 @@ def run(dry_run: bool = False) -> int:
             to_publish[item_id] = queued_path.read_text(encoding="utf-8")
 
     publisher = GitHubPublisher(token, repository, branch, base_branch)
-    changed = publisher.publish(to_publish)
+    index_content = build_top_items_index(to_publish)
+    changed = publisher.publish(to_publish, index_content)
 
     published = state.setdefault("published", {})
     for item_id, content in to_publish.items():

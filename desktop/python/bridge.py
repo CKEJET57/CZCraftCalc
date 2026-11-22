@@ -83,6 +83,7 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
         batch_operation, history_operation, recipe_operation,
     )
     from services.market_analysis import analyze_market
+    from services.top_items import get_top_items
     from services import catalog
 
     state = get_state()
@@ -124,6 +125,8 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
         if result is None:
             raise ValueError(f"Нет истории для {payload.get('item_id')}")
         return result
+    if action == "top_items":
+        return get_top_items(state, limit=int(payload.get("limit") or 100))
     if action == "market_analysis":
         return analyze_market(
             str(payload.get("item_id") or ""), int(payload.get("days") or 7)
@@ -141,7 +144,7 @@ def dispatch(payload: dict[str, Any]) -> dict[str, Any]:
         return _search_character(payload)
     if action in {
         "health", "items", "categories", "item_details", "item_variants",
-        "recipe", "batch", "history", "market_analysis",
+        "recipe", "batch", "history", "market_analysis", "top_items",
     }:
         try:
             action_payload = payload.get("payload")

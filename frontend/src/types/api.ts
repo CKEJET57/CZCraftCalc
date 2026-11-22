@@ -253,3 +253,17 @@ export interface MarketAnalysisResp {
   best_time: MarketBestTime | null
   warnings: string[]
 }
+
+// ─── Рейтинг самых продаваемых предметов ───
+export interface TopItem {
+  item_id: string
+  name: string
+  deals: number
+  turnover: number
+  median_unit: number
+}
+
+export interface TopItemsResp {
+  hour: string | null
+  items: TopItem[]
+}
