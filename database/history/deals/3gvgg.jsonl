@@ -304,3 +304,4 @@
 {"item":"3gvgg","hour":"2026-11-22T20:00:00+03:00","deals":1,"amount":64,"turnover":30000.0,"min_unit":468.75,"max_unit":468.75,"avg_unit":468.75,"median_unit":468.75,"source_records":1,"aggregated_at":"2026-11-22T19:05:15.497640+00:00"}
 {"item":"3gvgg","hour":"2026-11-22T21:00:00+03:00","deals":1,"amount":1,"turnover":2300.0,"min_unit":2300.0,"max_unit":2300.0,"avg_unit":2300.0,"median_unit":2300.0,"source_records":1,"aggregated_at":"2026-11-22T19:05:15.497640+00:00"}
 {"item":"3gvgg","hour":"2026-11-22T23:00:00+03:00","deals":1,"amount":1,"turnover":2300.0,"min_unit":2300.0,"max_unit":2300.0,"avg_unit":2300.0,"median_unit":2300.0,"source_records":1,"aggregated_at":"2026-11-22T21:05:37.288519+00:00"}
+{"item":"3gvgg","hour":"2026-11-23T00:00:00+03:00","deals":2,"amount":33,"turnover":22399.0,"min_unit":624.96875,"max_unit":2400.0,"avg_unit":678.757576,"median_unit":1512.484375,"source_records":2,"aggregated_at":"2026-11-22T23:05:31.170875+00:00"}

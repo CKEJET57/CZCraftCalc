@@ -197,3 +197,4 @@
 {"item":"4nkr","hour":"2026-11-22T19:00:00+03:00","deals":1,"amount":50,"turnover":122999.0,"min_unit":2459.98,"max_unit":2459.98,"avg_unit":2459.98,"median_unit":2459.98,"source_records":1,"aggregated_at":"2026-11-22T19:05:15.497640+00:00"}
 {"item":"4nkr","hour":"2026-11-22T20:00:00+03:00","deals":2,"amount":17,"turnover":17500.0,"min_unit":833.333333,"max_unit":1071.428571,"avg_unit":1029.411765,"median_unit":952.380952,"source_records":2,"aggregated_at":"2026-11-22T19:05:15.497640+00:00"}
 {"item":"4nkr","hour":"2026-11-22T22:00:00+03:00","deals":2,"amount":56,"turnover":42499.0,"min_unit":710.0,"max_unit":1166.5,"avg_unit":758.910714,"median_unit":938.25,"source_records":2,"aggregated_at":"2026-11-22T21:05:37.288519+00:00"}
+{"item":"4nkr","hour":"2026-11-22T23:00:00+03:00","deals":3,"amount":7,"turnover":6999.0,"min_unit":775.0,"max_unit":1500.0,"avg_unit":999.857143,"median_unit":899.0,"source_records":3,"aggregated_at":"2026-11-22T23:05:31.170875+00:00"}
