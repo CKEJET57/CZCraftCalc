@@ -167,3 +167,4 @@
 {"item":"lywmk","hour":"2026-11-22T22:00:00+03:00","deals":3,"amount":3,"turnover":90000.0,"min_unit":30000.0,"max_unit":30000.0,"avg_unit":30000.0,"median_unit":30000.0,"source_records":3,"aggregated_at":"2026-11-22T21:05:37.288519+00:00"}
 {"item":"lywmk","hour":"2026-11-23T12:00:00+03:00","deals":1,"amount":1,"turnover":24599.0,"min_unit":24599.0,"max_unit":24599.0,"avg_unit":24599.0,"median_unit":24599.0,"source_records":1,"aggregated_at":"2026-11-23T11:05:18.308192+00:00"}
 {"item":"lywmk","hour":"2026-11-23T13:00:00+03:00","deals":3,"amount":3,"turnover":75000.0,"min_unit":25000.0,"max_unit":25000.0,"avg_unit":25000.0,"median_unit":25000.0,"source_records":3,"aggregated_at":"2026-11-23T11:05:18.308192+00:00"}
+{"item":"lywmk","hour":"2026-11-23T14:00:00+03:00","deals":2,"amount":2,"turnover":50000.0,"min_unit":25000.0,"max_unit":25000.0,"avg_unit":25000.0,"median_unit":25000.0,"source_records":2,"aggregated_at":"2026-11-23T13:05:08.052047+00:00"}
