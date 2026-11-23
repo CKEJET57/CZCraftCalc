@@ -150,3 +150,4 @@
 {"item":"km6y","hour":"2026-11-23T11:00:00+03:00","deals":5,"amount":201,"turnover":48896.0,"min_unit":239.98,"max_unit":900.0,"avg_unit":243.263682,"median_unit":239.98,"source_records":5,"aggregated_at":"2026-11-23T11:05:18.308192+00:00"}
 {"item":"km6y","hour":"2026-11-23T12:00:00+03:00","deals":3,"amount":150,"turnover":35997.0,"min_unit":239.98,"max_unit":239.98,"avg_unit":239.98,"median_unit":239.98,"source_records":3,"aggregated_at":"2026-11-23T11:05:18.308192+00:00"}
 {"item":"km6y","hour":"2026-11-23T14:00:00+03:00","deals":3,"amount":3,"turnover":2499.0,"min_unit":500.0,"max_unit":1000.0,"avg_unit":833.0,"median_unit":999.0,"source_records":3,"aggregated_at":"2026-11-23T13:05:08.052047+00:00"}
+{"item":"km6y","hour":"2026-11-23T16:00:00+03:00","deals":3,"amount":127,"turnover":28498.0,"min_unit":205.852941,"max_unit":239.98,"avg_unit":224.393701,"median_unit":220.930233,"source_records":3,"aggregated_at":"2026-11-23T15:05:31.371264+00:00"}

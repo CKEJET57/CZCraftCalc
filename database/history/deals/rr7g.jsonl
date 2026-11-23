@@ -190,3 +190,4 @@
 {"item":"rr7g","hour":"2026-11-23T12:00:00+03:00","deals":20,"amount":142,"turnover":184043.0,"min_unit":777.76,"max_unit":3998.0,"avg_unit":1296.077465,"median_unit":2690.0,"source_records":20,"aggregated_at":"2026-11-23T11:05:18.308192+00:00"}
 {"item":"rr7g","hour":"2026-11-23T13:00:00+03:00","deals":2,"amount":100,"turnover":157500.0,"min_unit":1500.0,"max_unit":1650.0,"avg_unit":1575.0,"median_unit":1575.0,"source_records":2,"aggregated_at":"2026-11-23T13:05:08.052047+00:00"}
 {"item":"rr7g","hour":"2026-11-23T14:00:00+03:00","deals":1,"amount":2,"turnover":2000.0,"min_unit":1000.0,"max_unit":1000.0,"avg_unit":1000.0,"median_unit":1000.0,"source_records":1,"aggregated_at":"2026-11-23T13:05:08.052047+00:00"}
+{"item":"rr7g","hour":"2026-11-23T16:00:00+03:00","deals":15,"amount":113,"turnover":105671.0,"min_unit":499.98,"max_unit":3998.0,"avg_unit":935.141593,"median_unit":3998.0,"source_records":15,"aggregated_at":"2026-11-23T15:05:31.371264+00:00"}
