@@ -361,12 +361,21 @@ export function ItemPage() {
             <div className="flex flex-wrap gap-4 text-sm">
               <Check label="Рекурсивный крафт" checked={settings.recursive}
                 onChange={v => setSettings(s => ({ ...s, recursive: v }))} />
-              <Check label="Без истории (только лоты)" checked={settings.noHistory}
-                onChange={v => setSettings(s => ({ ...s, noHistory: v }))} />
               <Check label="Игнорировать ошибки цен" checked={settings.ignoreMissing}
                 onChange={v => setSettings(s => ({ ...s, ignoreMissing: v }))} />
-              <Check label="Из локальной базы" checked={settings.useLocal}
-                onChange={v => setSettings(s => ({ ...s, useLocal: v }))} />
+              {!api.desktop && (
+                <>
+                  <Check label="Без истории (только лоты)" checked={settings.noHistory}
+                    onChange={v => setSettings(s => ({ ...s, noHistory: v }))} />
+                  <Check label="Из локальной базы" checked={settings.useLocal}
+                    onChange={v => setSettings(s => ({ ...s, useLocal: v }))} />
+                </>
+              )}
+              {api.desktop && (
+                <span className="text-xs text-emerald-300">
+                  Desktop использует только локальную копию market-data. Запросы цен к STALCRAFT API отключены.
+                </span>
+              )}
             </div>
           </div>
         )}
