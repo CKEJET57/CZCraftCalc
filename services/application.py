@@ -30,7 +30,7 @@ def _options(payload: dict) -> AnalysisOptions:
         verbose=False,
         ignore_missing=payload.get("ignore_missing", False),
         exclude=",".join(payload.get("exclude") or []),
-        use_local_data=True,
+        use_local_data=payload.get("use_local_data", False),
     )
 
 
@@ -207,7 +207,7 @@ def history_operation(state, payload: dict) -> dict | None:
         no_history=payload.get("no_history", False),
         no_heartbeat=True,
         verbose=False,
-        use_local_data=True,
+        use_local_data=payload.get("use_local_data", False),
     )
     ctx = state.build_context(opts)
     result = analyze_history(
