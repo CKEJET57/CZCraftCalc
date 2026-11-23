@@ -761,7 +761,7 @@ function ItemHistory({
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">История сделок</h3>
+        <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider">{api.desktop ? 'Почасовая история продаж' : 'История сделок'}</h3>
         <div className="flex bg-slate-900 rounded-md p-1 border border-slate-800">
           <button onClick={() => setViewMode('chart')}
             className={`px-3 py-1 text-xs rounded transition ${viewMode === 'chart' ? 'bg-slate-700 text-white shadow' : 'text-slate-400 hover:text-slate-200'}`}>
@@ -805,9 +805,9 @@ function ItemHistory({
               <thead className="bg-slate-900 text-slate-400">
                 <tr>
                   <th className="text-left px-3 py-2">Время</th>
-                  <th className="text-right px-3 py-2">Цена/шт</th>
-                  <th className="text-right px-3 py-2">Кол-во</th>
-                  <th className="text-right px-3 py-2">Итого</th>
+                  <th className="text-right px-3 py-2">{api.desktop ? 'Медиана/шт' : 'Цена/шт'}</th>
+                  <th className="text-right px-3 py-2">{api.desktop ? 'Продано, шт' : 'Кол-во'}</th>
+                  <th className="text-right px-3 py-2">{api.desktop ? 'Оборот' : 'Итого'}</th>
                 </tr>
               </thead>
               <tbody>
