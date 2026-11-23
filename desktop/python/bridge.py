@@ -74,9 +74,19 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
 
     Перед обращением к справочникам подготавливает локальные файлы database.
     """
+    if action == "sync_market_data":
+        from services.market_data import sync_market_data
+        return sync_market_data()
+    if action == "market_data_status":
+        from services.market_data import market_data_status
+        return market_data_status()
+
     from storage.downloader import ensure_database_files
 
     ensure_database_files()
+
+    # Все рыночные операции Desktop принудительно работают офлайн.
+    payload = {**payload, "use_local_data": True}
 
     from services.app_state import get_state
     from services.application import (
@@ -167,6 +177,7 @@ def dispatch(payload: dict[str, Any]) -> dict[str, Any]:
     if action in {
         "health", "items", "categories", "item_details", "item_variants",
         "recipe", "batch", "history", "market_analysis", "top_items",
+        "sync_market_data", "market_data_status",
     }:
         try:
             action_payload = payload.get("payload")
