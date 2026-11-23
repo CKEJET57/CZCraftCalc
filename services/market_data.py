@@ -124,15 +124,27 @@ def load_item_hours(item_id: str, days: int | None = None) -> list[dict]:
     return list(rows)
 
 
-def latest_item_price(item_id: str) -> tuple[float | None, int]:
-    rows = load_item_hours(item_id)
-    if not rows:
-        return None, 0
+def latest_market_hour() -> str | None:
     try:
-        value = rows[-1].get("median_unit")
-        return (float(value), int(rows[-1].get("deals") or 0)) if value is not None else (None, 0)
-    except (TypeError, ValueError):
+        payload = json.loads(INDEX_FILE.read_text(encoding="utf-8"))
+        return payload.get("hour")
+    except (OSError, ValueError):
+        return None
+
+
+def latest_item_price(item_id: str) -> tuple[float | None, int]:
+    # Для всех ингредиентов используем один общий час из опубликованного индекса.
+    hour = latest_market_hour()
+    if not hour:
         return None, 0
+    for row in reversed(load_item_hours(item_id)):
+        if row.get("hour") == hour:
+            try:
+                value = row.get("median_unit")
+                return (float(value), int(row.get("deals") or 0)) if value is not None else (None, 0)
+            except (TypeError, ValueError):
+                return None, 0
+    return None, 0
 
 
 class MarketDataPriceService:
