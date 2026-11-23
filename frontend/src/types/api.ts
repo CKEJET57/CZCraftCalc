@@ -130,6 +130,7 @@ export interface Deal {
   amount: number
   unit: number
   time: string | null
+  deals?: number
 }
 
 export interface HistoryResp {
