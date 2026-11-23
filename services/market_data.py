@@ -143,6 +143,10 @@ class MarketDataPriceService:
         return PriceInfo(str(item_id), price,
                          "market-data" if price is not None else "none", samples)
 
+    def is_cached(self, item_id: str) -> bool:
+        # Локальное чтение не требует предварительной загрузки в сетевой кэш.
+        return True
+
     def prefetch(self, item_ids, workers: int = 4, progress=None) -> None:
         unique = list(dict.fromkeys(str(value) for value in item_ids if value))
         for index, item_id in enumerate(unique, 1):
