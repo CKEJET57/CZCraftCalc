@@ -39,6 +39,8 @@ database/listing.json
 database/stats.json
 *.log
 
+database/market-data/
+
 # ─── OS ───
 .DS_Store
 Thumbs.db
