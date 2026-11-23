@@ -114,6 +114,8 @@ export const api = {
     ? desktopRequest<TopItemsResp>('top_items', { limit })
     : request<TopItemsResp>('/top-items?limit=' + limit),
 
+  syncMarketData: () => desktopRequest<{ ok: boolean; files: number; hour: string | null }>('sync_market_data'),
+
   marketAnalysis: (itemId: string, days = 7) => isDesktop()
     ? desktopRequest<MarketAnalysisResp>('market_analysis', { item_id: itemId, days })
     : request<MarketAnalysisResp>(
