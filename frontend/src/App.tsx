@@ -16,7 +16,7 @@ export default function App() {
         <Route path="batch" element={<BatchPage />} />
         <Route path="items" element={<ItemPage />} />
         <Route path="top-items" element={<TopItemsPage />} />
-        <Route path="character" element={api.desktop ? <Navigate to="/" replace /> : <CharacterPage />} />
+        {!api.desktop && <Route path="character" element={<CharacterPage />} />}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
