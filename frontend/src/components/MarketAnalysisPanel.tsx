@@ -56,8 +56,8 @@ function LiquidityBlock({ liq }: { liq: MarketLiquidity }) {
         <Cell label="Продаж/день" value={liq.units_per_day.toFixed(1)} />
         <Cell label="Оборот/день" value={fmtPrice(liq.rub_per_day)} />
         <Cell label="Спред" value={liq.spread_pct != null ? `${liq.spread_pct.toFixed(1)}%` : '—'} />
-        <Cell label="Активных лотов" value={String(liq.active_lots)} />
-        <Cell label="Мин. лот" value={fmtPrice(liq.min_unit)} />
+        <Cell label="Активных лотов" value={liq.active_lots != null ? String(liq.active_lots) : '—'} />
+        <Cell label="Мин. лот" value={liq.min_unit != null ? fmtPrice(liq.min_unit) : '—'} />
         <Cell label="Медиана продаж" value={fmtPrice(liq.median_sold)} />
         <Cell label="Разгрести стакан" value={liq.days_to_sell != null ? `${liq.days_to_sell.toFixed(1)} дн` : '—'} />
       </div>
