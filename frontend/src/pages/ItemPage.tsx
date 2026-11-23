@@ -111,7 +111,7 @@ export function ItemPage() {
       const [dRes, vRes, hRes] = await Promise.all([
         api.itemDetails(id).catch(() => null),
         api.itemVariants(id).catch(() => null),
-        api.history({ item_id: id, limit: 200, show: PAGE_SIZE, page: 0, sort: 'newest' }),
+        api.history({ item_id: id, limit: api.desktop ? 720 : 200, show: PAGE_SIZE, page: 0, sort: 'newest' }),
       ])
       if (dRes) setItemDetails(dRes)
       if (vRes?.available) setVariants(vRes.variants)
@@ -132,7 +132,7 @@ export function ItemPage() {
     try {
       const nextPage = historyPage + 1
       const h = await api.history({
-        item_id: itemId, limit: 200, show: PAGE_SIZE, page: nextPage, sort: 'newest',
+        item_id: itemId, limit: api.desktop ? 720 : 200, show: PAGE_SIZE, page: nextPage, sort: 'newest',
       })
       setAllDeals(prev => [...prev, ...h.deals])
       setHistoryPage(nextPage)
