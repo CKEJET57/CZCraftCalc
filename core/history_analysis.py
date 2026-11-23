@@ -51,6 +51,8 @@ def analyze_history(item_id: str, opts, ctx, *,
             "unit": float(d.get("unit") or (price / amount)),
             "time": d.get("time") or d.get("timestamp"),
             "deals": int(d.get("deals") or 1),
+            "min_unit": float(d.get("min_unit") or d.get("unit") or (price / amount)),
+            "max_unit": float(d.get("max_unit") or d.get("unit") or (price / amount)),
         })
     if not deals:
         return HistoryResult(item_id, name, [], {}, 0, 0, 1)
@@ -88,8 +90,8 @@ def analyze_history(item_id: str, opts, ctx, *,
         "n_deals": sum(d["deals"] for d in deals),
         "total_units": sum(d["amount"] for d in deals),
         "total_rub": sum(d["price"] for d in deals),
-        "min": units[0],
-        "max": units[-1],
+        "min": min(d["min_unit"] for d in deals),
+        "max": max(d["max_unit"] for d in deals),
         "median": statistics.median(units),
         "median_trim10": statistics.median(core) if core else 0.0,
     }
