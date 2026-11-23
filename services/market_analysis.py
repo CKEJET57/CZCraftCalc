@@ -257,7 +257,7 @@ def analyze_market_from_market_data(item_id: str, days: int = 7) -> dict:
             "deals": deals, "units": units, "rub": rub,
             "deals_per_day": deals / n_days, "units_per_day": units / n_days,
             "rub_per_day": rub / n_days,
-            "active_amount": 0, "active_lots": 0, "min_unit": 0,
+            "active_amount": None, "active_lots": None, "min_unit": None,
             "median_sold": overall, "depth_amount": 0,
             "days_to_sell": None, "turnover": None, "spread_pct": None,
             "level": level, "level_code": level_code,
