@@ -246,9 +246,10 @@ def analyze_market_from_market_data(item_id: str, days: int = 7) -> dict:
                            "action": "buy" if delta < -3 else ("sell" if delta > 3 else None)})
         return result
 
+    units_per_day = units / n_days
     level, level_code = (
-        ("🟢 ВЫСОКАЯ", "HIGH") if deals / n_days >= 50 else
-        ("🟡 СРЕДНЯЯ", "MEDIUM") if deals / n_days >= 5 else
+        ("🟢 ВЫСОКАЯ", "HIGH") if units_per_day >= 50 else
+        ("🟡 СРЕДНЯЯ", "MEDIUM") if units_per_day >= 5 else
         ("🔴 НИЗКАЯ", "LOW")
     )
     return {
@@ -258,7 +259,7 @@ def analyze_market_from_market_data(item_id: str, days: int = 7) -> dict:
             "deals_per_day": deals / n_days, "units_per_day": units / n_days,
             "rub_per_day": rub / n_days,
             "active_amount": None, "active_lots": None, "min_unit": None,
-            "median_sold": overall, "depth_amount": 0,
+            "median_sold": overall, "depth_amount": None,
             "days_to_sell": None, "turnover": None, "spread_pct": None,
             "level": level, "level_code": level_code,
         },
