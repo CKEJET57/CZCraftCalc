@@ -217,9 +217,9 @@ export interface MarketLiquidity {
   deals_per_day: number
   units_per_day: number
   rub_per_day: number
-  active_amount: number
-  active_lots: number
-  min_unit: number
+  active_amount: number | null
+  active_lots: number | null
+  min_unit: number | null
   median_sold: number
   depth_amount: number
   days_to_sell: number | null
