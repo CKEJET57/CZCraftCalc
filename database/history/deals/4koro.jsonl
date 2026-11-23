@@ -106,3 +106,4 @@
 {"item":"4koro","hour":"2026-11-23T03:00:00+03:00","deals":12,"amount":555,"turnover":78696.0,"min_unit":118.0,"max_unit":179.98,"avg_unit":141.794595,"median_unit":123.814815,"source_records":12,"aggregated_at":"2026-11-23T03:05:20.349446+00:00"}
 {"item":"4koro","hour":"2026-11-23T04:00:00+03:00","deals":14,"amount":700,"turnover":80250.0,"min_unit":98.0,"max_unit":152.0,"avg_unit":114.642857,"median_unit":114.0,"source_records":14,"aggregated_at":"2026-11-23T03:05:20.349446+00:00"}
 {"item":"4koro","hour":"2026-11-23T05:00:00+03:00","deals":12,"amount":600,"turnover":91190.0,"min_unit":151.8,"max_unit":152.0,"avg_unit":151.983333,"median_unit":152.0,"source_records":12,"aggregated_at":"2026-11-23T03:05:20.349446+00:00"}
+{"item":"4koro","hour":"2026-11-23T07:00:00+03:00","deals":12,"amount":600,"turnover":88398.0,"min_unit":139.78,"max_unit":230.0,"avg_unit":147.33,"median_unit":139.8,"source_records":12,"aggregated_at":"2026-11-23T05:05:10.307455+00:00"}
