@@ -92,7 +92,7 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
     from services.application import (
         batch_operation, history_operation, recipe_operation,
     )
-    from services.market_analysis import analyze_market
+    from services.market_analysis import analyze_market_from_market_data
     from services.top_items import get_top_items
     from services import catalog
 
@@ -160,7 +160,7 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
             row["icon_url"] = f"data:{mime};base64,{encoded}"
         return result
     if action == "market_analysis":
-        return analyze_market(
+        return analyze_market_from_market_data(
             str(payload.get("item_id") or ""), int(payload.get("days") or 7)
         )
     if action == "health":
