@@ -78,15 +78,18 @@ class AppState:
             svc = self._price_services.get(key)
             if svc is not None:
                 return svc
-            token = self._get_token()
-            svc = PriceService(
-                token, region=region,
-                use_history=not no_history,
-                max_requests=10_000_000,
-                heartbeat=False, 
-                verbose=False,
-                use_local=use_local, # <-- ПЕРЕДАЕМ СЮДА
-            )
+            if use_local:
+                from services.market_data import MarketDataPriceService
+                svc = MarketDataPriceService()
+            else:
+                token = self._get_token()
+                svc = PriceService(
+                    token, region=region,
+                    use_history=not no_history,
+                    max_requests=10_000_000,
+                    heartbeat=False,
+                    verbose=False,
+                )
             self._price_services[key] = svc
             return svc
 
