@@ -195,3 +195,81 @@ def analyze_market(item_id: str, days: int = 7) -> dict:
         "best_time": _best_time(deals, days),
         "warnings": _data_quality_warnings(deals, snapshots, days),
     }
+
+
+
+def analyze_market_from_market_data(item_id: str, days: int = 7) -> dict:
+    """Аналитика только по почасовым агрегатам; активные лоты не моделируются."""
+    from services.market_data import load_item_hours
+
+    rows = load_item_hours(item_id, days)
+    if not rows:
+        return {
+            "item_id": item_id, "days": days, "liquidity": None,
+            "best_time": None,
+            "warnings": ["Нет локальных почасовых данных. Синхронизируйте market-data."],
+        }
+
+    deals = sum(int(row.get("deals") or 0) for row in rows)
+    units = sum(int(row.get("amount") or 0) for row in rows)
+    rub = sum(float(row.get("turnover") or 0) for row in rows)
+    n_days = max(days, 1)
+    medians = [float(row.get("median_unit") or 0) for row in rows
+               if float(row.get("median_unit") or 0) > 0]
+    overall = statistics.median(medians) if medians else 0.0
+
+    by_hour: dict[int, list[tuple[float, int]]] = defaultdict(list)
+    by_weekday: dict[int, list[tuple[float, int]]] = defaultdict(list)
+    by_day: dict[str, list[tuple[float, int]]] = defaultdict(list)
+    for row in rows:
+        dt = _parse_iso(row.get("hour"))
+        price = float(row.get("median_unit") or 0)
+        count = int(row.get("deals") or 0)
+        if not dt or price <= 0:
+            continue
+        local = dt.astimezone(_TZ) if _TZ is not None else dt
+        by_hour[local.hour].append((price, count))
+        by_weekday[local.weekday()].append((price, count))
+        by_day[local.strftime("%Y-%m-%d")].append((price, count))
+
+    def bucket(values, key, key_name):
+        result = []
+        for label in sorted(values):
+            entries = values[label]
+            sample_n = sum(n for _, n in entries)
+            if sample_n <= 0:
+                continue
+            median = statistics.median(price for price, _ in entries)
+            delta = (median - overall) / overall * 100 if overall else 0
+            result.append({key_name: label, "n": sample_n, "median": median,
+                           "dev_pct": delta,
+                           "action": "buy" if delta < -3 else ("sell" if delta > 3 else None)})
+        return result
+
+    level, level_code = (
+        ("🟢 ВЫСОКАЯ", "HIGH") if deals / n_days >= 50 else
+        ("🟡 СРЕДНЯЯ", "MEDIUM") if deals / n_days >= 5 else
+        ("🔴 НИЗКАЯ", "LOW")
+    )
+    return {
+        "item_id": item_id, "days": days,
+        "liquidity": {
+            "deals": deals, "units": units, "rub": rub,
+            "deals_per_day": deals / n_days, "units_per_day": units / n_days,
+            "rub_per_day": rub / n_days,
+            "active_amount": 0, "active_lots": 0, "min_unit": 0,
+            "median_sold": overall, "depth_amount": 0,
+            "days_to_sell": None, "turnover": None, "spread_pct": None,
+            "level": level, "level_code": level_code,
+        },
+        "best_time": {
+            "by_hour": bucket(by_hour, "hour", "hour"),
+            "by_weekday": bucket(by_weekday, "weekday", "weekday"),
+            "by_day": bucket(by_day, "date", "date")[-7:],
+            "overall_median": overall,
+        },
+        "warnings": [
+            "Данные агрегированы по часам: отдельные сделки недоступны.",
+            "Активные лоты, глубина рынка и спред не рассчитываются: snapshots отсутствуют.",
+        ],
+    }
