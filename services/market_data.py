@@ -103,29 +103,29 @@ def load_item_hours(item_id: str, days: int | None = None) -> list[dict]:
         return []
     with _data_lock:
         rows = _rows_cache.get(item_id)
-    if rows is None:
-        path = DEALS_DIR / f"{item_id}.jsonl"
-        loaded: list[dict] = []
-        if path.is_file():
-            with path.open("r", encoding="utf-8") as stream:
-                for line in stream:
-                    try:
-                        row = json.loads(line)
-                    except ValueError:
-                        continue
-                    if isinstance(row, dict) and row.get("hour"):
-                        loaded.append(row)
-        loaded.sort(key=lambda row: row.get("hour") or "")
-        with _data_lock:
+        if rows is None:
+            path = DEALS_DIR / f"{item_id}.jsonl"
+            loaded: list[dict] = []
+            if path.is_file():
+                with path.open("r", encoding="utf-8") as stream:
+                    for line in stream:
+                        try:
+                            row = json.loads(line)
+                        except ValueError:
+                            continue
+                        if isinstance(row, dict) and row.get("hour"):
+                            loaded.append(row)
+            loaded.sort(key=lambda row: row.get("hour") or "")
             _rows_cache[item_id] = loaded
-        rows = loaded
+            rows = loaded
+        result = list(rows)
+
     if days is not None and days > 0:
         cutoff = datetime.now(timezone.utc).timestamp() - days * 86400
-        rows = [row for row in rows
-                if (dt := _parse_hour(row.get("hour"))) is not None
-                and dt.timestamp() >= cutoff]
-    return list(rows)
-
+        result = [row for row in result
+                  if (dt := _parse_hour(row.get("hour"))) is not None
+                  and dt.timestamp() >= cutoff]
+    return result
 
 def latest_market_hour() -> str | None:
     try:
