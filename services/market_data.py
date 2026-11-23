@@ -66,20 +66,19 @@ def sync_market_data() -> dict:
                 raise RuntimeError("Индекс top_items.json имеет неверный формат.")
 
             old = DB_DIR / ".market-data-old"
-            if old.exists():
-                shutil.rmtree(old)
-            if MARKET_DIR.exists():
-                MARKET_DIR.replace(old)
-            try:
-                stage.replace(MARKET_DIR)
-            except Exception:
-                if old.exists() and not MARKET_DIR.exists():
-                    old.replace(MARKET_DIR)
-                raise
-            if old.exists():
-                shutil.rmtree(old)
-
             with _data_lock:
+                if old.exists():
+                    shutil.rmtree(old)
+                if MARKET_DIR.exists():
+                    MARKET_DIR.replace(old)
+                try:
+                    stage.replace(MARKET_DIR)
+                except Exception:
+                    if old.exists() and not MARKET_DIR.exists():
+                        old.replace(MARKET_DIR)
+                    raise
+                if old.exists():
+                    shutil.rmtree(old)
                 _rows_cache.clear()
             return {"ok": True, "files": sum(1 for _ in DEALS_DIR.glob("*.jsonl")),
                     "hour": payload.get("hour")}
