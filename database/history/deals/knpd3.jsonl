@@ -131,3 +131,4 @@
 {"item":"knpd3","hour":"2026-11-22T23:00:00+03:00","deals":28,"amount":28,"turnover":188688.0,"min_unit":5500.0,"max_unit":7000.0,"avg_unit":6738.857143,"median_unit":7000.0,"source_records":28,"aggregated_at":"2026-11-22T23:05:31.170875+00:00"}
 {"item":"knpd3","hour":"2026-11-23T00:00:00+03:00","deals":4,"amount":4,"turnover":28000.0,"min_unit":7000.0,"max_unit":7000.0,"avg_unit":7000.0,"median_unit":7000.0,"source_records":4,"aggregated_at":"2026-11-22T23:05:31.170875+00:00"}
 {"item":"knpd3","hour":"2026-11-23T01:00:00+03:00","deals":25,"amount":25,"turnover":256899.0,"min_unit":6700.0,"max_unit":13000.0,"avg_unit":10275.96,"median_unit":11000.0,"source_records":25,"aggregated_at":"2026-11-22T23:05:31.170875+00:00"}
+{"item":"knpd3","hour":"2026-11-23T02:00:00+03:00","deals":5,"amount":5,"turnover":36498.0,"min_unit":7000.0,"max_unit":7500.0,"avg_unit":7299.6,"median_unit":7499.0,"source_records":5,"aggregated_at":"2026-11-23T01:05:25.777289+00:00"}
