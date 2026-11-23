@@ -87,6 +87,13 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
 
     # Все рыночные операции Desktop принудительно работают офлайн.
     payload = {**payload, "use_local_data": True}
+    if action in {"recipe", "batch", "history", "market_analysis", "top_items"}:
+        from services.market_data import market_data_status
+        if not market_data_status()["available"]:
+            raise RuntimeError(
+                "Локальные рыночные данные не найдены. Откройте «Самые продаваемые предметы» "
+                "и нажмите «Обновить рыночные данные»."
+            )
 
     from services.app_state import get_state
     from services.application import (
