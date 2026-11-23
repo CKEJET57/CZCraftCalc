@@ -814,9 +814,10 @@ function ItemHistory({
               <thead className="bg-slate-900 text-slate-400">
                 <tr>
                   <th className="text-left px-3 py-2">Время</th>
-                  <th className="text-right px-3 py-2">{api.desktop ? 'Медиана/шт' : 'Цена/шт'}</th>
-                  <th className="text-right px-3 py-2">{api.desktop ? 'Продано, шт' : 'Кол-во'}</th>
-                  <th className="text-right px-3 py-2">{api.desktop ? 'Оборот' : 'Итого'}</th>
+                  <th className="text-right px-3 py-2">{api.desktop ? 'Сделок' : 'Цена/шт'}</th>
+                  <th className="text-right px-3 py-2">{api.desktop ? 'Медиана/шт' : 'Кол-во'}</th>
+                  <th className="text-right px-3 py-2">{api.desktop ? 'Продано, шт' : 'Итого'}</th>
+                  {api.desktop && <th className="text-right px-3 py-2">Оборот</th>}
                 </tr>
               </thead>
               <tbody>
@@ -825,9 +826,10 @@ function ItemHistory({
                     <td className="px-3 py-1.5 text-slate-300">
                       {d.time ? new Date(d.time).toLocaleString('ru-RU') : '—'}
                     </td>
-                    <td className="px-3 py-1.5 text-right font-mono">{fmtPrice(d.unit)}</td>
-                    <td className="px-3 py-1.5 text-right">{d.amount}</td>
-                    <td className="px-3 py-1.5 text-right font-mono">{fmtPrice(d.price)}</td>
+                    <td className="px-3 py-1.5 text-right font-mono">{api.desktop ? (d.deals ?? 0) : fmtPrice(d.unit)}</td>
+                    <td className="px-3 py-1.5 text-right font-mono">{api.desktop ? fmtPrice(d.unit) : d.amount}</td>
+                    <td className="px-3 py-1.5 text-right">{api.desktop ? d.amount : fmtPrice(d.price)}</td>
+                    {api.desktop && <td className="px-3 py-1.5 text-right font-mono">{fmtPrice(d.price)}</td>}
                   </tr>
                 ))}
               </tbody>
