@@ -213,7 +213,12 @@ def analyze_market_from_market_data(item_id: str, days: int = 7) -> dict:
     deals = sum(int(row.get("deals") or 0) for row in rows)
     units = sum(int(row.get("amount") or 0) for row in rows)
     rub = sum(float(row.get("turnover") or 0) for row in rows)
-    n_days = max(days, 1)
+    first_hour = _parse_iso(rows[0].get("hour"))
+    covered_days = (
+        (datetime.now(timezone.utc) - first_hour.astimezone(timezone.utc)).days + 1
+        if first_hour else days
+    )
+    n_days = max(1, min(days, covered_days))
     medians = [float(row.get("median_unit") or 0) for row in rows
                if float(row.get("median_unit") or 0) > 0]
     overall = statistics.median(medians) if medians else 0.0
@@ -270,6 +275,7 @@ def analyze_market_from_market_data(item_id: str, days: int = 7) -> dict:
             "overall_median": overall,
         },
         "warnings": [
+            f"Расчёт охватывает {n_days} дн. фактических данных (в ветке market-data хранится ограниченная история).",
             "Данные агрегированы по часам: отдельные сделки недоступны.",
             "Активные лоты, глубина рынка и спред не рассчитываются: snapshots отсутствуют.",
         ],
