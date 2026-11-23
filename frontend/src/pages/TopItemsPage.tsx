@@ -25,6 +25,24 @@ export function TopItemsPage() {
   const [data, setData] = useState<TopItemsResp | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [syncing, setSyncing] = useState(false)
+  const [syncMessage, setSyncMessage] = useState('')
+
+  async function syncMarketData() {
+    setSyncing(true)
+    setSyncMessage('')
+    setError('')
+    try {
+      const result = await api.syncMarketData()
+      const latest = await api.topItems(100)
+      setData(latest)
+      setSyncMessage(`Синхронизировано файлов: ${result.files}. Час: ${result.hour ?? 'нет данных'}`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   useEffect(() => {
     let active = true
@@ -37,12 +55,25 @@ export function TopItemsPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-bold">Самые продаваемые предметы</h1>
-        <p className="mt-1 text-sm text-slate-400">
-          {data ? formatHour(data.hour) : 'Почасовой рейтинг по количеству сделок'}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold">Самые продаваемые предметы</h1>
+          <p className="mt-1 text-sm text-slate-400">
+            {data ? formatHour(data.hour) : 'Почасовой рейтинг по количеству сделок'}
+          </p>
+        </div>
+        {api.desktop && (
+          <button
+            type="button"
+            onClick={syncMarketData}
+            disabled={syncing}
+            className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-slate-700 disabled:opacity-50"
+          >
+            {syncing ? 'Синхронизация…' : 'Обновить рыночные данные'}
+          </button>
+        )}
       </div>
+      {syncMessage && <p className="text-sm text-emerald-300">{syncMessage}</p>}
 
       {loading && (
         <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-6 text-sm text-slate-400">
