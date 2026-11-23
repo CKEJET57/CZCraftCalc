@@ -147,3 +147,4 @@
 {"item":"okdpo","hour":"2026-11-23T10:00:00+03:00","deals":1,"amount":10,"turnover":80000.0,"min_unit":8000.0,"max_unit":8000.0,"avg_unit":8000.0,"median_unit":8000.0,"source_records":1,"aggregated_at":"2026-11-23T09:05:26.082216+00:00"}
 {"item":"okdpo","hour":"2026-11-23T18:00:00+03:00","deals":2,"amount":11,"turnover":90000.0,"min_unit":7500.0,"max_unit":8250.0,"avg_unit":8181.818182,"median_unit":7875.0,"source_records":2,"aggregated_at":"2026-11-23T17:05:20.886814+00:00"}
 {"item":"okdpo","hour":"2026-11-23T19:00:00+03:00","deals":1,"amount":1,"turnover":7500.0,"min_unit":7500.0,"max_unit":7500.0,"avg_unit":7500.0,"median_unit":7500.0,"source_records":1,"aggregated_at":"2026-11-23T17:05:20.886814+00:00"}
+{"item":"okdpo","hour":"2026-11-23T20:00:00+03:00","deals":1,"amount":1,"turnover":7500.0,"min_unit":7500.0,"max_unit":7500.0,"avg_unit":7500.0,"median_unit":7500.0,"source_records":1,"aggregated_at":"2026-11-23T20:05:38.062483+00:00"}
