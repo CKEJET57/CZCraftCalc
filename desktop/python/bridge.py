@@ -126,7 +126,29 @@ def _desktop_api(action: str, payload: dict[str, Any]) -> Any:
             raise ValueError(f"Нет истории для {payload.get('item_id')}")
         return result
     if action == "top_items":
-        return get_top_items(state, limit=int(payload.get("limit") or 100))
+        result = get_top_items(state, limit=int(payload.get("limit") or 100))
+        # В Tauri нет HTTP backend, поэтому локальные иконки отдаём как data URI.
+        import base64
+        from config import DB_DIR
+        for row in result.get("items", []):
+            icon_url = row.get("icon_url")
+            if not icon_url or not icon_url.startswith("/api/static/"):
+                continue
+            relative = icon_url.removeprefix("/api/static/")
+            icon_path = (DB_DIR / relative).resolve()
+            if not icon_path.is_file() or not icon_path.is_relative_to(DB_DIR.resolve()):
+                row["icon_url"] = None
+                continue
+            suffix = icon_path.suffix.lower()
+            mime = {
+                ".png": "image/png",
+                ".jpg": "image/jpeg",
+                ".jpeg": "image/jpeg",
+                ".webp": "image/webp",
+            }.get(suffix, "application/octet-stream")
+            encoded = base64.b64encode(icon_path.read_bytes()).decode("ascii")
+            row["icon_url"] = f"data:{mime};base64,{encoded}"
+        return result
     if action == "market_analysis":
         return analyze_market(
             str(payload.get("item_id") or ""), int(payload.get("days") or 7)
