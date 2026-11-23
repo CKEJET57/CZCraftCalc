@@ -48,8 +48,9 @@ def analyze_history(item_id: str, opts, ctx, *,
         deals.append({
             "price": price,
             "amount": amount,
-            "unit": price / amount,
+            "unit": float(d.get("unit") or (price / amount)),
             "time": d.get("time") or d.get("timestamp"),
+            "deals": int(d.get("deals") or 1),
         })
     if not deals:
         return HistoryResult(item_id, name, [], {}, 0, 0, 1)
@@ -84,7 +85,7 @@ def analyze_history(item_id: str, opts, ctx, *,
     trim = int(n * 0.1)
     core = units[trim: n - trim] if trim else units
     stats = {
-        "n_deals": n,
+        "n_deals": sum(d["deals"] for d in deals),
         "total_units": sum(d["amount"] for d in deals),
         "total_rub": sum(d["price"] for d in deals),
         "min": units[0],
