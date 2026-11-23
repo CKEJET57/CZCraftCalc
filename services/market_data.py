@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -98,6 +99,8 @@ def market_data_status() -> dict:
 def load_item_hours(item_id: str, days: int | None = None) -> list[dict]:
     """Возвращает почасовые агрегаты предмета в хронологическом порядке."""
     item_id = str(item_id)
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", item_id):
+        return []
     with _data_lock:
         rows = _rows_cache.get(item_id)
     if rows is None:
