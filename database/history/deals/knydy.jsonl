@@ -136,3 +136,4 @@
 {"item":"knydy","hour":"2026-11-23T05:00:00+03:00","deals":7,"amount":7,"turnover":160296.0,"min_unit":22899.0,"max_unit":22900.0,"avg_unit":22899.428571,"median_unit":22899.0,"source_records":7,"aggregated_at":"2026-11-23T05:05:10.307455+00:00"}
 {"item":"knydy","hour":"2026-11-23T06:00:00+03:00","deals":1,"amount":1,"turnover":22900.0,"min_unit":22900.0,"max_unit":22900.0,"avg_unit":22900.0,"median_unit":22900.0,"source_records":1,"aggregated_at":"2026-11-23T05:05:10.307455+00:00"}
 {"item":"knydy","hour":"2026-11-23T07:00:00+03:00","deals":1,"amount":1,"turnover":29000.0,"min_unit":29000.0,"max_unit":29000.0,"avg_unit":29000.0,"median_unit":29000.0,"source_records":1,"aggregated_at":"2026-11-23T05:05:10.307455+00:00"}
+{"item":"knydy","hour":"2026-11-23T09:00:00+03:00","deals":5,"amount":5,"turnover":114986.0,"min_unit":22990.0,"max_unit":22999.0,"avg_unit":22997.2,"median_unit":22999.0,"source_records":5,"aggregated_at":"2026-11-23T07:05:33.285696+00:00"}
