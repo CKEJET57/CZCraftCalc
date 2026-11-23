@@ -39,6 +39,11 @@ def fetch_token(max_retries: int = 3, verbose: bool = False) -> dict:
       - 401/403 (неверный client_secret — бессмысленно повторять)
       - 400 (неверный запрос)
     """
+    if not CLIENT_SECRET:
+        raise RuntimeError(
+            "Для обращения к STALCRAFT API задайте STALCRAFT_CLIENT_SECRET в .env."
+        )
+
     last_err: Exception | None = None
 
     for attempt in range(max_retries):
