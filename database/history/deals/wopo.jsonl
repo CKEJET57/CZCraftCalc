@@ -204,3 +204,4 @@
 {"item":"wopo","hour":"2026-11-24T04:00:00+03:00","deals":4,"amount":88,"turnover":74580.0,"min_unit":800.0,"max_unit":979.0,"avg_unit":847.5,"median_unit":906.166667,"source_records":4,"aggregated_at":"2026-11-24T03:05:36.422728+00:00"}
 {"item":"wopo","hour":"2026-11-24T05:00:00+03:00","deals":3,"amount":150,"turnover":134800.0,"min_unit":896.0,"max_unit":900.0,"avg_unit":898.666667,"median_unit":900.0,"source_records":3,"aggregated_at":"2026-11-24T05:05:28.586278+00:00"}
 {"item":"wopo","hour":"2026-11-24T07:00:00+03:00","deals":1,"amount":50,"turnover":44999.0,"min_unit":899.98,"max_unit":899.98,"avg_unit":899.98,"median_unit":899.98,"source_records":1,"aggregated_at":"2026-11-24T07:05:22.105764+00:00"}
+{"item":"wopo","hour":"2026-11-24T09:00:00+03:00","deals":1,"amount":50,"turnover":43000.0,"min_unit":860.0,"max_unit":860.0,"avg_unit":860.0,"median_unit":860.0,"source_records":1,"aggregated_at":"2026-11-24T09:05:15.231709+00:00"}
