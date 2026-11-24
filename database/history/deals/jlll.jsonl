@@ -187,3 +187,4 @@
 {"item":"jlll","hour":"2026-11-24T04:00:00+03:00","deals":5,"amount":214,"turnover":195665.0,"min_unit":897.76,"max_unit":1045.5,"avg_unit":914.32243,"median_unit":897.76,"source_records":5,"aggregated_at":"2026-11-24T02:05:12.931593+00:00"}
 {"item":"jlll","hour":"2026-11-24T05:00:00+03:00","deals":4,"amount":200,"turnover":179996.0,"min_unit":899.98,"max_unit":899.98,"avg_unit":899.98,"median_unit":899.98,"source_records":4,"aggregated_at":"2026-11-24T04:05:34.203828+00:00"}
 {"item":"jlll","hour":"2026-11-24T06:00:00+03:00","deals":5,"amount":218,"turnover":198996.0,"min_unit":880.0,"max_unit":1111.055556,"avg_unit":912.825688,"median_unit":899.98,"source_records":5,"aggregated_at":"2026-11-24T04:05:34.203828+00:00"}
+{"item":"jlll","hour":"2026-11-24T08:00:00+03:00","deals":1,"amount":4,"turnover":3.0,"min_unit":0.75,"max_unit":0.75,"avg_unit":0.75,"median_unit":0.75,"source_records":1,"aggregated_at":"2026-11-24T07:05:22.105764+00:00"}
