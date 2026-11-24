@@ -226,3 +226,4 @@
 {"item":"4njo","hour":"2026-11-24T05:00:00+03:00","deals":2,"amount":51,"turnover":255999.0,"min_unit":5000.0,"max_unit":5999.0,"avg_unit":5019.588235,"median_unit":5499.5,"source_records":2,"aggregated_at":"2026-11-24T05:05:28.586278+00:00"}
 {"item":"4njo","hour":"2026-11-24T07:00:00+03:00","deals":1,"amount":50,"turnover":165000.0,"min_unit":3300.0,"max_unit":3300.0,"avg_unit":3300.0,"median_unit":3300.0,"source_records":1,"aggregated_at":"2026-11-24T05:05:28.586278+00:00"}
 {"item":"4njo","hour":"2026-11-24T08:00:00+03:00","deals":1,"amount":50,"turnover":170000.0,"min_unit":3400.0,"max_unit":3400.0,"avg_unit":3400.0,"median_unit":3400.0,"source_records":1,"aggregated_at":"2026-11-24T07:05:22.105764+00:00"}
+{"item":"4njo","hour":"2026-11-24T13:00:00+03:00","deals":7,"amount":11,"turnover":64000.0,"min_unit":4000.0,"max_unit":10000.0,"avg_unit":5818.181818,"median_unit":6000.0,"source_records":7,"aggregated_at":"2026-11-24T11:05:08.314481+00:00"}
