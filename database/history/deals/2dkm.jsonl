@@ -63,3 +63,4 @@
 {"item":"2dkm","hour":"2026-11-21T17:00:00+03:00","deals":1,"amount":10,"turnover":75000.0,"min_unit":7500.0,"max_unit":7500.0,"avg_unit":7500.0,"median_unit":7500.0,"source_records":1,"aggregated_at":"2026-11-21T22:05:16.272076+00:00"}
 {"item":"2dkm","hour":"2026-11-21T22:00:00+03:00","deals":2,"amount":60,"turnover":347776.0,"min_unit":5399.98,"max_unit":7777.7,"avg_unit":5796.266667,"median_unit":6588.84,"source_records":2,"aggregated_at":"2026-11-21T22:05:16.272076+00:00"}
 {"item":"2dkm","hour":"2026-11-22T10:00:00+03:00","deals":1,"amount":50,"turnover":269999.0,"min_unit":5399.98,"max_unit":5399.98,"avg_unit":5399.98,"median_unit":5399.98,"source_records":1,"aggregated_at":"2026-11-22T08:05:34.294335+00:00"}
+{"item":"2dkm","hour":"2026-11-24T21:00:00+03:00","deals":1,"amount":50,"turnover":240000.0,"min_unit":4800.0,"max_unit":4800.0,"avg_unit":4800.0,"median_unit":4800.0,"source_records":1,"aggregated_at":"2026-11-24T21:05:33.866337+00:00"}
