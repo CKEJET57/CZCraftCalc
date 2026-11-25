@@ -102,3 +102,4 @@
 {"item":"035r","hour":"2026-11-24T22:00:00+03:00","deals":1,"amount":50,"turnover":4999.0,"min_unit":99.98,"max_unit":99.98,"avg_unit":99.98,"median_unit":99.98,"source_records":1,"aggregated_at":"2026-11-24T21:05:33.866337+00:00"}
 {"item":"035r","hour":"2026-11-25T03:00:00+03:00","deals":1,"amount":50,"turnover":4000.0,"min_unit":80.0,"max_unit":80.0,"avg_unit":80.0,"median_unit":80.0,"source_records":1,"aggregated_at":"2026-11-25T01:05:22.255251+00:00"}
 {"item":"035r","hour":"2026-11-25T15:00:00+03:00","deals":1,"amount":50,"turnover":4500.0,"min_unit":90.0,"max_unit":90.0,"avg_unit":90.0,"median_unit":90.0,"source_records":1,"aggregated_at":"2026-11-25T15:05:33.951278+00:00"}
+{"item":"035r","hour":"2026-11-25T18:00:00+03:00","deals":11,"amount":550,"turnover":52986.0,"min_unit":90.0,"max_unit":99.96,"avg_unit":96.338182,"median_unit":99.96,"source_records":11,"aggregated_at":"2026-11-25T17:05:25.545692+00:00"}
