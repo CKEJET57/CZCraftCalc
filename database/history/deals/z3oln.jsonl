@@ -125,3 +125,4 @@
 {"item":"z3oln","hour":"2026-11-24T04:00:00+03:00","deals":2,"amount":2,"turnover":3790.0,"min_unit":1800.0,"max_unit":1990.0,"avg_unit":1895.0,"median_unit":1895.0,"source_records":2,"aggregated_at":"2026-11-24T03:05:36.422728+00:00"}
 {"item":"z3oln","hour":"2026-11-24T19:00:00+03:00","deals":4,"amount":4,"turnover":5974.0,"min_unit":1488.0,"max_unit":1499.0,"avg_unit":1493.5,"median_unit":1493.5,"source_records":4,"aggregated_at":"2026-11-24T18:05:16.360914+00:00"}
 {"item":"z3oln","hour":"2026-11-25T17:00:00+03:00","deals":2,"amount":2,"turnover":2800.0,"min_unit":1000.0,"max_unit":1800.0,"avg_unit":1400.0,"median_unit":1400.0,"source_records":2,"aggregated_at":"2026-11-25T16:05:30.419199+00:00"}
+{"item":"z3oln","hour":"2026-11-25T20:00:00+03:00","deals":3,"amount":3,"turnover":4500.0,"min_unit":1500.0,"max_unit":1500.0,"avg_unit":1500.0,"median_unit":1500.0,"source_records":3,"aggregated_at":"2026-11-25T18:05:20.949481+00:00"}
