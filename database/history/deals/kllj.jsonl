@@ -173,3 +173,4 @@
 {"item":"kllj","hour":"2026-11-24T21:00:00+03:00","deals":3,"amount":150,"turnover":129989.0,"min_unit":799.98,"max_unit":900.0,"avg_unit":866.593333,"median_unit":899.8,"source_records":3,"aggregated_at":"2026-11-24T21:05:33.866337+00:00"}
 {"item":"kllj","hour":"2026-11-24T23:00:00+03:00","deals":4,"amount":200,"turnover":79947.0,"min_unit":399.0,"max_unit":399.98,"avg_unit":399.735,"median_unit":399.98,"source_records":4,"aggregated_at":"2026-11-24T23:05:27.657224+00:00"}
 {"item":"kllj","hour":"2026-11-25T00:00:00+03:00","deals":13,"amount":650,"turnover":259989.0,"min_unit":399.98,"max_unit":400.0,"avg_unit":399.983077,"median_unit":399.98,"source_records":13,"aggregated_at":"2026-11-24T23:05:27.657224+00:00"}
+{"item":"kllj","hour":"2026-11-25T03:00:00+03:00","deals":1,"amount":50,"turnover":19888.0,"min_unit":397.76,"max_unit":397.76,"avg_unit":397.76,"median_unit":397.76,"source_records":1,"aggregated_at":"2026-11-25T01:05:22.255251+00:00"}
