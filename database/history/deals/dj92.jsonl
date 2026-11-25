@@ -224,3 +224,4 @@
 {"item":"dj92","hour":"2026-11-25T07:00:00+03:00","deals":1,"amount":2,"turnover":5000.0,"min_unit":2500.0,"max_unit":2500.0,"avg_unit":2500.0,"median_unit":2500.0,"source_records":1,"aggregated_at":"2026-11-25T07:05:32.834669+00:00"}
 {"item":"dj92","hour":"2026-11-25T08:00:00+03:00","deals":7,"amount":12,"turnover":84654.0,"min_unit":6333.0,"max_unit":7776.0,"avg_unit":7054.5,"median_unit":7776.0,"source_records":7,"aggregated_at":"2026-11-25T07:05:32.834669+00:00"}
 {"item":"dj92","hour":"2026-11-25T09:00:00+03:00","deals":2,"amount":2,"turnover":15552.0,"min_unit":7776.0,"max_unit":7776.0,"avg_unit":7776.0,"median_unit":7776.0,"source_records":2,"aggregated_at":"2026-11-25T07:05:32.834669+00:00"}
+{"item":"dj92","hour":"2026-11-25T10:00:00+03:00","deals":2,"amount":7,"turnover":45774.0,"min_unit":6333.0,"max_unit":7776.0,"avg_unit":6539.142857,"median_unit":7054.5,"source_records":2,"aggregated_at":"2026-11-25T09:05:27.754827+00:00"}

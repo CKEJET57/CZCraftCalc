@@ -169,3 +169,4 @@
 {"item":"kkrv","hour":"2026-11-25T00:00:00+03:00","deals":2,"amount":180,"turnover":110.0,"min_unit":0.458333,"max_unit":0.916667,"avg_unit":0.611111,"median_unit":0.6875,"source_records":2,"aggregated_at":"2026-11-24T23:05:27.657224+00:00"}
 {"item":"kkrv","hour":"2026-11-25T04:00:00+03:00","deals":5,"amount":600,"turnover":19995.0,"min_unit":33.325,"max_unit":33.325,"avg_unit":33.325,"median_unit":33.325,"source_records":5,"aggregated_at":"2026-11-25T03:05:15.214237+00:00"}
 {"item":"kkrv","hour":"2026-11-25T05:00:00+03:00","deals":2,"amount":240,"turnover":9940.0,"min_unit":41.166667,"max_unit":41.666667,"avg_unit":41.416667,"median_unit":41.416667,"source_records":2,"aggregated_at":"2026-11-25T03:05:15.214237+00:00"}
+{"item":"kkrv","hour":"2026-11-25T11:00:00+03:00","deals":9,"amount":1080,"turnover":41500.0,"min_unit":12.5,"max_unit":41.666667,"avg_unit":38.425926,"median_unit":41.666667,"source_records":9,"aggregated_at":"2026-11-25T09:05:27.754827+00:00"}
