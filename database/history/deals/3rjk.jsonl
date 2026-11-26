@@ -37,3 +37,4 @@
 {"item":"3rjk","hour":"2026-11-16T05:00:00+03:00","deals":1,"amount":50,"turnover":180000.0,"min_unit":3600.0,"max_unit":3600.0,"avg_unit":3600.0,"median_unit":3600.0,"source_records":1,"aggregated_at":"2026-11-19T11:37:22.364458+00:00"}
 {"item":"3rjk","hour":"2026-11-20T11:00:00+03:00","deals":1,"amount":10,"turnover":35000.0,"min_unit":3500.0,"max_unit":3500.0,"avg_unit":3500.0,"median_unit":3500.0,"source_records":1,"aggregated_at":"2026-11-21T22:05:16.272076+00:00"}
 {"item":"3rjk","hour":"2026-11-21T22:00:00+03:00","deals":1,"amount":25,"turnover":49999.0,"min_unit":1999.96,"max_unit":1999.96,"avg_unit":1999.96,"median_unit":1999.96,"source_records":1,"aggregated_at":"2026-11-21T22:05:16.272076+00:00"}
+{"item":"3rjk","hour":"2026-11-26T14:00:00+03:00","deals":1,"amount":5,"turnover":7000.0,"min_unit":1400.0,"max_unit":1400.0,"avg_unit":1400.0,"median_unit":1400.0,"source_records":1,"aggregated_at":"2026-11-26T13:05:28.329141+00:00"}
