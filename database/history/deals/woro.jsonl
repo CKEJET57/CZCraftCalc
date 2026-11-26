@@ -233,3 +233,4 @@
 {"item":"woro","hour":"2026-11-26T20:00:00+03:00","deals":1,"amount":1,"turnover":9000.0,"min_unit":9000.0,"max_unit":9000.0,"avg_unit":9000.0,"median_unit":9000.0,"source_records":1,"aggregated_at":"2026-11-26T19:05:25.547441+00:00"}
 {"item":"woro","hour":"2026-11-26T21:00:00+03:00","deals":25,"amount":27,"turnover":337819.0,"min_unit":8000.0,"max_unit":16000.0,"avg_unit":12511.814815,"median_unit":12000.0,"source_records":25,"aggregated_at":"2026-11-26T21:05:17.828994+00:00"}
 {"item":"woro","hour":"2026-11-26T22:00:00+03:00","deals":8,"amount":34,"turnover":363500.0,"min_unit":10000.0,"max_unit":15000.0,"avg_unit":10691.176471,"median_unit":13000.0,"source_records":8,"aggregated_at":"2026-11-26T21:05:17.828994+00:00"}
+{"item":"woro","hour":"2026-11-27T00:00:00+03:00","deals":5,"amount":5,"turnover":63978.0,"min_unit":11000.0,"max_unit":13998.0,"avg_unit":12795.6,"median_unit":12990.0,"source_records":5,"aggregated_at":"2026-11-26T23:05:08.387120+00:00"}
