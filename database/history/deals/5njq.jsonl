@@ -311,3 +311,4 @@
 {"item":"5njq","hour":"2026-11-26T13:00:00+03:00","deals":1,"amount":15,"turnover":15000.0,"min_unit":1000.0,"max_unit":1000.0,"avg_unit":1000.0,"median_unit":1000.0,"source_records":1,"aggregated_at":"2026-11-26T11:05:36.997101+00:00"}
 {"item":"5njq","hour":"2026-11-26T15:00:00+03:00","deals":3,"amount":3,"turnover":2260.0,"min_unit":660.0,"max_unit":900.0,"avg_unit":753.333333,"median_unit":700.0,"source_records":3,"aggregated_at":"2026-11-26T13:05:28.329141+00:00"}
 {"item":"5njq","hour":"2026-11-26T17:00:00+03:00","deals":4,"amount":18,"turnover":18499.0,"min_unit":1000.0,"max_unit":1499.0,"avg_unit":1027.722222,"median_unit":1000.0,"source_records":4,"aggregated_at":"2026-11-26T15:05:18.257270+00:00"}
+{"item":"5njq","hour":"2026-11-26T19:00:00+03:00","deals":3,"amount":29,"turnover":29250.0,"min_unit":1000.0,"max_unit":1250.0,"avg_unit":1008.62069,"median_unit":1000.0,"source_records":3,"aggregated_at":"2026-11-26T17:05:37.688832+00:00"}
