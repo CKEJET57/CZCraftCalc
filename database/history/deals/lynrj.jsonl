@@ -149,3 +149,4 @@
 {"item":"lynrj","hour":"2026-11-26T09:00:00+03:00","deals":2,"amount":4,"turnover":122.0,"min_unit":16.666667,"max_unit":72.0,"avg_unit":30.5,"median_unit":44.333333,"source_records":2,"aggregated_at":"2026-11-26T08:05:19.438966+00:00"}
 {"item":"lynrj","hour":"2026-11-26T16:00:00+03:00","deals":17,"amount":156,"turnover":83695.0,"min_unit":200.0,"max_unit":1333.0,"avg_unit":536.50641,"median_unit":500.0,"source_records":17,"aggregated_at":"2026-11-26T16:05:13.349402+00:00"}
 {"item":"lynrj","hour":"2026-11-26T19:00:00+03:00","deals":4,"amount":40,"turnover":22800.0,"min_unit":180.0,"max_unit":700.0,"avg_unit":570.0,"median_unit":700.0,"source_records":4,"aggregated_at":"2026-11-26T18:05:31.153722+00:00"}
+{"item":"lynrj","hour":"2026-11-26T22:00:00+03:00","deals":33,"amount":324,"turnover":370988.0,"min_unit":500.0,"max_unit":2000.0,"avg_unit":1145.024691,"median_unit":700.0,"source_records":33,"aggregated_at":"2026-11-26T20:05:20.535170+00:00"}

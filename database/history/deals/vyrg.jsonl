@@ -42,3 +42,4 @@
 {"item":"vyrg","hour":"2026-11-25T18:00:00+03:00","deals":1,"amount":2,"turnover":3000.0,"min_unit":1500.0,"max_unit":1500.0,"avg_unit":1500.0,"median_unit":1500.0,"source_records":1,"aggregated_at":"2026-11-25T17:05:25.545692+00:00"}
 {"item":"vyrg","hour":"2026-11-25T20:00:00+03:00","deals":1,"amount":2,"turnover":51.0,"min_unit":25.5,"max_unit":25.5,"avg_unit":25.5,"median_unit":25.5,"source_records":1,"aggregated_at":"2026-11-25T19:05:15.693928+00:00"}
 {"item":"vyrg","hour":"2026-11-26T13:00:00+03:00","deals":4,"amount":8,"turnover":19996.0,"min_unit":2499.5,"max_unit":2499.5,"avg_unit":2499.5,"median_unit":2499.5,"source_records":4,"aggregated_at":"2026-11-26T11:05:36.997101+00:00"}
+{"item":"vyrg","hour":"2026-11-26T21:00:00+03:00","deals":1,"amount":2,"turnover":3000.0,"min_unit":1500.0,"max_unit":1500.0,"avg_unit":1500.0,"median_unit":1500.0,"source_records":1,"aggregated_at":"2026-11-26T20:05:20.535170+00:00"}
