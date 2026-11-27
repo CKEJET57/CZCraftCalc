@@ -214,3 +214,4 @@
 {"item":"qj9n6","hour":"2026-11-26T17:00:00+03:00","deals":2,"amount":8,"turnover":24666.0,"min_unit":2571.428571,"max_unit":6666.0,"avg_unit":3083.25,"median_unit":4618.714286,"source_records":2,"aggregated_at":"2026-11-26T16:05:13.349402+00:00"}
 {"item":"qj9n6","hour":"2026-11-26T18:00:00+03:00","deals":2,"amount":8,"turnover":49666.0,"min_unit":6142.857143,"max_unit":6666.0,"avg_unit":6208.25,"median_unit":6404.428571,"source_records":2,"aggregated_at":"2026-11-26T18:05:31.153722+00:00"}
 {"item":"qj9n6","hour":"2026-11-27T00:00:00+03:00","deals":1,"amount":1,"turnover":6666.0,"min_unit":6666.0,"max_unit":6666.0,"avg_unit":6666.0,"median_unit":6666.0,"source_records":1,"aggregated_at":"2026-11-26T22:05:13.087792+00:00"}
+{"item":"qj9n6","hour":"2026-11-27T16:00:00+03:00","deals":1,"amount":64,"turnover":348000.0,"min_unit":5437.5,"max_unit":5437.5,"avg_unit":5437.5,"median_unit":5437.5,"source_records":1,"aggregated_at":"2026-11-27T15:05:36.744325+00:00"}

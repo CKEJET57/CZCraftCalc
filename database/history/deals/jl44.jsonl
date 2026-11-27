@@ -157,3 +157,4 @@
 {"item":"jl44","hour":"2026-11-27T06:00:00+03:00","deals":9,"amount":450,"turnover":202482.0,"min_unit":449.96,"max_unit":449.96,"avg_unit":449.96,"median_unit":449.96,"source_records":9,"aggregated_at":"2026-11-27T05:05:17.466491+00:00"}
 {"item":"jl44","hour":"2026-11-27T08:00:00+03:00","deals":1,"amount":50,"turnover":36999.0,"min_unit":739.98,"max_unit":739.98,"avg_unit":739.98,"median_unit":739.98,"source_records":1,"aggregated_at":"2026-11-27T07:05:11.093361+00:00"}
 {"item":"jl44","hour":"2026-11-27T14:00:00+03:00","deals":1,"amount":50,"turnover":22498.0,"min_unit":449.96,"max_unit":449.96,"avg_unit":449.96,"median_unit":449.96,"source_records":1,"aggregated_at":"2026-11-27T13:05:20.271093+00:00"}
+{"item":"jl44","hour":"2026-11-27T16:00:00+03:00","deals":3,"amount":150,"turnover":67494.0,"min_unit":449.96,"max_unit":449.96,"avg_unit":449.96,"median_unit":449.96,"source_records":3,"aggregated_at":"2026-11-27T15:05:36.744325+00:00"}
