@@ -274,3 +274,4 @@
 {"item":"km9v","hour":"2026-11-27T00:00:00+03:00","deals":4,"amount":200,"turnover":265552.0,"min_unit":1177.76,"max_unit":1399.98,"avg_unit":1327.76,"median_unit":1366.65,"source_records":4,"aggregated_at":"2026-11-26T23:05:08.387120+00:00"}
 {"item":"km9v","hour":"2026-11-27T01:00:00+03:00","deals":1,"amount":50,"turnover":69999.0,"min_unit":1399.98,"max_unit":1399.98,"avg_unit":1399.98,"median_unit":1399.98,"source_records":1,"aggregated_at":"2026-11-26T23:05:08.387120+00:00"}
 {"item":"km9v","hour":"2026-11-27T05:00:00+03:00","deals":3,"amount":71,"turnover":120800.0,"min_unit":1380.0,"max_unit":2545.454545,"avg_unit":1701.408451,"median_unit":2380.0,"source_records":3,"aggregated_at":"2026-11-27T03:05:23.535532+00:00"}
+{"item":"km9v","hour":"2026-11-27T13:00:00+03:00","deals":1,"amount":2,"turnover":5200.0,"min_unit":2600.0,"max_unit":2600.0,"avg_unit":2600.0,"median_unit":2600.0,"source_records":1,"aggregated_at":"2026-11-27T11:05:28.169852+00:00"}
